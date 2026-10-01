@@ -61,10 +61,19 @@ int main()
         }
         if (bn::keypad::up_held())
         {
+            if (player.y() < MIN_Y)
+            {
+                player.set_y(MAX_Y);
+            }
+
             player.set_y(player.y() - SPEED);
         }
         if (bn::keypad::down_held())
         {
+            if (player.y() > MAX_Y)
+            {
+                player.set_y(MIN_Y);
+            }
             player.set_y(player.y() + SPEED);
         }
 

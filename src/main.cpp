@@ -26,6 +26,10 @@ static constexpr int MIN_Y = -bn::display::height() / 2;
 static constexpr int MAX_Y = bn::display::height() / 2;
 static constexpr int MIN_X = -bn::display::width() / 2;
 static constexpr int MAX_X = bn::display::width() / 2;
+static constexpr int PLAYER_X = 25;
+static constexpr int PLAYER_Y = -25;
+static constexpr int TREASURE_X = 60;
+static constexpr int TREASURE_Y = -45;
 
 // Number of characters required to show the longest numer possible in an int (-2147483647)
 static constexpr int MAX_SCORE_CHARS = 11;
@@ -46,8 +50,8 @@ int main()
 
     int score = 0;
 
-    bn::sprite_ptr player = bn::sprite_items::square.create_sprite(-50, 50);
-    bn::sprite_ptr treasure = bn::sprite_items::dot.create_sprite(0, 0);
+    bn::sprite_ptr player = bn::sprite_items::square.create_sprite(PLAYER_X, PLAYER_Y);
+    bn::sprite_ptr treasure = bn::sprite_items::dot.create_sprite(TREASURE_X, TREASURE_Y);
     bn::backdrop::set_color(bn::color(0, 31, 31));
     while (true)
     {
@@ -112,8 +116,8 @@ int main()
         if (bn::keypad::start_pressed())
         {
             score = 0;
-            player = bn::sprite_items::square.create_sprite(-50, 50);
-            treasure = bn::sprite_items::dot.create_sprite(0, 0);
+            player = bn::sprite_items::square.create_sprite(PLAYER_X, PLAYER_Y);
+            treasure = bn::sprite_items::dot.create_sprite(TREASURE_X, TREASURE_Y);
         }
         score_sprites.clear();
         text_generator.generate(SCORE_X, SCORE_Y,

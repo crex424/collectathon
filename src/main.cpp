@@ -109,6 +109,12 @@ int main()
 
         // Update score display
         bn::string<MAX_SCORE_CHARS> score_string = bn::to_string<MAX_SCORE_CHARS>(score);
+        if (bn::keypad::start_pressed())
+        {
+            score = 0;
+            player = bn::sprite_items::square.create_sprite(-50, 50);
+            treasure = bn::sprite_items::dot.create_sprite(0, 0);
+        }
         score_sprites.clear();
         text_generator.generate(SCORE_X, SCORE_Y,
                                 score_string,

@@ -9,6 +9,8 @@
 #include <bn_size.h>
 #include <bn_string.h>
 #include <bn_backdrop.h>
+#include <bn_timers.h>
+#include <bn_timer.h>
 
 #include "bn_sprite_items_dot.h"
 #include "bn_sprite_items_square.h"
@@ -29,14 +31,22 @@ static constexpr int MAX_X = bn::display::width() / 2;
 
 // Number of characters required to show the longest numer possible in an int (-2147483647)
 static constexpr int MAX_SCORE_CHARS = 11;
+static constexpr int MAX_BOOSTER_CHARS = 1;
 
 // Score location
 static constexpr int SCORE_X = 70;
 static constexpr int SCORE_Y = -70;
 
+// Booster resource location
+static constexpr int BOOSTER_X = -70;
+static constexpr int BOOSTER_Y = -70;
+
 int main()
 {
     bn::core::init();
+
+    // Creates and starts a timer for boost mechanic
+    bn::timer timer_boost;
 
     bn::random rng = bn::random();
 
@@ -44,11 +54,19 @@ int main()
     bn::vector<bn::sprite_ptr, MAX_SCORE_CHARS> score_sprites = {};
     bn::sprite_text_generator text_generator(common::fixed_8x16_sprite_font);
 
+    bn::vector<bn::sprite_ptr, MAX_BOOSTER_CHARS> booster_sprites = {};
+
     int score = 0;
+
+    // Everything related to boosters, including amout left and modifiers
+    int boosters = 3;
+    int boost_mod = 0;
+    bn::fixed player_speed = SPEED + boost_mod;
 
     bn::sprite_ptr player = bn::sprite_items::square.create_sprite(-50, 50);
     bn::sprite_ptr treasure = bn::sprite_items::dot.create_sprite(0, 0);
     bn::backdrop::set_color(bn::color(0, 31, 31));
+
     while (true)
     {
         // Move player with d-pad
@@ -58,7 +76,7 @@ int main()
             {
                 player.set_x(MAX_X);
             }
-            player.set_x(player.x() - SPEED);
+            player.set_x(player.x() - player_speed);
         }
         if (bn::keypad::right_held())
         {
@@ -66,7 +84,7 @@ int main()
             {
                 player.set_x(MIN_X);
             }
-            player.set_x(player.x() + SPEED);
+            player.set_x(player.x() + player_speed);
         }
         if (bn::keypad::up_held())
         {
@@ -75,7 +93,7 @@ int main()
                 player.set_y(MAX_Y);
             }
 
-            player.set_y(player.y() - SPEED);
+            player.set_y(player.y() - player_speed);
         }
         if (bn::keypad::down_held())
         {
@@ -83,7 +101,22 @@ int main()
             {
                 player.set_y(MIN_Y);
             }
-            player.set_y(player.y() + SPEED);
+            player.set_y(player.y() + player_speed);
+        }
+        if (bn::keypad::a_pressed() && boosters > 0)
+        {
+            boost_mod = 2;
+            boosters--;
+            timer_boost.restart();
+            while (true)
+            {
+                int ticks_elapsed = timer_boost.elapsed_ticks_with_restart();
+                if (ticks_elapsed / bn::timers::ticks_per_second() >= 3)
+                {
+                    boost_mod = 0;
+                    break;
+                }
+            }
         }
 
         // The bounding boxes of the player and treasure, snapped to integer pixels
@@ -119,6 +152,12 @@ int main()
         text_generator.generate(SCORE_X, SCORE_Y,
                                 score_string,
                                 score_sprites);
+
+        bn::string<MAX_BOOSTER_CHARS> booster_string = bn::to_string<MAX_BOOSTER_CHARS>(boosters);
+        booster_sprites.clear();
+        text_generator.generate(BOOSTER_X, BOOSTER_Y, 
+                                booster_string, 
+                                booster_sprites);
 
         // Update RNG seed every frame so we don't get the same sequence of positions every time
         rng.update();

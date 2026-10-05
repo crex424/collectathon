@@ -11,7 +11,11 @@ MAX_Y is the border of the bottom of the y axis.
 
 ## Planning required changes
 
+1. Add a boost mechanic with a limit of three boosts per reset.
+
 ## Brainstorming game ideas
+
+1. Backdrop changes to a random color evert time the score is increased by 10.
 
 ## Plan for implementing game
 

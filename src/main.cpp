@@ -164,6 +164,7 @@ int main()
         if (bn::keypad::start_pressed())
         {
             score = 0;
+            boosters = 3;
             player = bn::sprite_items::square.create_sprite(PLAYER_X, PLAYER_Y);
             treasure = bn::sprite_items::dot.create_sprite(TREASURE_X, TREASURE_Y);
         }

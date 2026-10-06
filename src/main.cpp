@@ -18,7 +18,7 @@
 #include "bn_log.h"
 
 // Pixels / Frame player moves at
-static constexpr bn::fixed SPEED = 1;
+static constexpr bn::fixed SPEED = 4;
 
 // Width and height of the the player and treasure bounding boxes
 static constexpr bn::size PLAYER_SIZE = {8, 8};
@@ -68,9 +68,8 @@ int main()
 
     // Everything related to boosters, including amout left and modifiers
     int boosters = 3;
-    bn::fixed boost_mod = 3;
-    bn::fixed player_speed = SPEED;
-    bool isBoosted = false;
+    int player_speed = SPEED.integer();
+    bool is_boosted = false;
 
     bn::sprite_ptr player = bn::sprite_items::square.create_sprite(PLAYER_X, PLAYER_Y);
     bn::sprite_ptr treasure = bn::sprite_items::dot.create_sprite(TREASURE_X, TREASURE_Y);
@@ -86,9 +85,23 @@ int main()
         int boosted_ticks_elapsed = timer_boost.elapsed_ticks();
         int boosted_seconds_passed = boosted_ticks_elapsed / bn::timers::ticks_per_second();
 
+        if (bn::keypad::a_pressed() && boosters > 0 && !is_boosted)
+        {
+            boosters--;
+            timer_boost.restart();
+            is_boosted = true;
+            player_speed = SPEED.integer() + 3;
+        }
+        if (boosted_seconds_passed >= 3 && is_boosted)
+        {
+            player_speed = SPEED.integer();
+            is_boosted = false;
+        }
+
         // LOGS FOR TESTING PURPOSES
-        BN_LOG("Game Ticks Elapsed: ", game_ticks_elapsed);
-        BN_LOG("Booster Ticks Elapsed: ", boosted_ticks_elapsed);
+        BN_LOG("Game Ticks Elapsed: ", game_seconds_passed);
+        BN_LOG("Booster Ticks Elapsed: ", boosted_seconds_passed);
+        BN_LOG("Player Current Speed: ", player_speed);
 
         // Move player with d-pad
         if (bn::keypad::left_held())
@@ -123,19 +136,6 @@ int main()
                 player.set_y(MIN_Y);
             }
             player.set_y(player.y() + player_speed);
-        }
-        if (bn::keypad::a_pressed() && boosters > 0 && game_seconds_passed > 3 && boosted_seconds_passed > 3)
-        {
-            isBoosted = true;
-            player_speed.operator+=(boost_mod);
-            boosters--;
-            timer_boost.restart();
-        }
-
-        if (boosted_seconds_passed >= 3 && game_seconds_passed >= 3 && isBoosted)
-        {
-            player_speed.operator-=(boost_mod);
-            isBoosted = false;
         }
 
         // The bounding boxes of the player and treasure, snapped to integer pixels
@@ -179,7 +179,7 @@ int main()
                                 booster_sprites);
 
         // FOR TESTING PURPOSES ONLY; May be used as a game timer in the future!
-        bn::string<MAX_TEST_CHARS> test_string = bn::to_string<MAX_TEST_CHARS>(game_seconds_passed);
+        bn::string<MAX_TEST_CHARS> test_string = bn::to_string<MAX_TEST_CHARS>(boosted_seconds_passed);
         test_sprites.clear();
         text_generator.generate(0, -70,
                                 test_string,

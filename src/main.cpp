@@ -36,15 +36,15 @@ static constexpr int TREASURE_Y = -45;
 
 // Number of characters required to show the longest numer possible in an int (-2147483647)
 static constexpr int MAX_SCORE_CHARS = 11;
-static constexpr int MAX_BOOSTER_CHARS = 1;
+static constexpr int MAX_BOOSTER_CHARS = 8;
 static constexpr int MAX_TEST_CHARS = 3;
 
 // Score location
-static constexpr int SCORE_X = 70;
+static constexpr int SCORE_X = 50;
 static constexpr int SCORE_Y = -70;
 
 // Booster resource location
-static constexpr int BOOSTER_X = -80;
+static constexpr int BOOSTER_X = -116;
 static constexpr int BOOSTER_Y = -70;
 
 int main()
@@ -167,14 +167,14 @@ int main()
         }
         score_sprites.clear();
         text_generator.generate(SCORE_X, SCORE_Y,
-                                score_string,
+                                "SCORE " + score_string,
                                 score_sprites);
 
         // Update booster resource display
         bn::string<MAX_BOOSTER_CHARS> booster_string = bn::to_string<MAX_BOOSTER_CHARS>(boosters);
         booster_sprites.clear();
         text_generator.generate(BOOSTER_X, BOOSTER_Y,
-                                booster_string,
+                                "BOOST " + booster_string,
                                 booster_sprites);
 
         // FOR TESTING PURPOSES ONLY; doubles as a game timer!

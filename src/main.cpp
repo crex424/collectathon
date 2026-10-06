@@ -66,14 +66,14 @@ int main()
 
     int score = 0;
 
-    // Everything related to boosters, including amout left and modifiers
+    // Everything related to boosters, including amount left and modifiers
     int boosters = 3;
     int player_speed = SPEED.integer();
     bool is_boosted = false;
 
     bn::sprite_ptr player = bn::sprite_items::square.create_sprite(PLAYER_X, PLAYER_Y);
     bn::sprite_ptr treasure = bn::sprite_items::dot.create_sprite(TREASURE_X, TREASURE_Y);
-    bn::backdrop::set_color(bn::color(0, 31, 31));
+    bn::backdrop::set_color(bn::color(2, 19, 19));
 
     while (true)
     {
@@ -81,26 +81,24 @@ int main()
         int game_ticks_elapsed = timer_game.elapsed_ticks();
         int game_seconds_passed = game_ticks_elapsed / bn::timers::ticks_per_second();
 
-        // Timer used specifically for the boost mechanic
-        int boosted_ticks_elapsed = timer_boost.elapsed_ticks();
-        int boosted_seconds_passed = boosted_ticks_elapsed / bn::timers::ticks_per_second();
-
-        if (boosted_seconds_passed >= 3 && is_boosted)
-        {
-            player_speed = SPEED.integer();
-            is_boosted = false;
-        }
+        // Activate Boost
         if (bn::keypad::a_pressed() && boosters > 0 && !is_boosted)
         {
             boosters--;
             timer_boost.restart();
             is_boosted = true;
-            player_speed = SPEED.integer() + 5;
+            player_speed = SPEED.integer() + 1;
+        }
+
+        // End Boost
+        if ((timer_boost.elapsed_ticks() / bn::timers::ticks_per_second()) >= 3 && is_boosted)
+        {
+            player_speed = SPEED.integer();
+            is_boosted = false;
         }
 
         // LOGS FOR TESTING PURPOSES
-        BN_LOG("Game Ticks Elapsed: ", game_seconds_passed);
-        BN_LOG("Booster Ticks Elapsed: ", boosted_seconds_passed);
+        BN_LOG("Game Seconds Elapsed: ", game_seconds_passed);
         BN_LOG("Player Current Speed: ", player_speed);
 
         // Move player with d-pad
@@ -173,14 +171,15 @@ int main()
                                 score_string,
                                 score_sprites);
 
+        // Update booster resource display
         bn::string<MAX_BOOSTER_CHARS> booster_string = bn::to_string<MAX_BOOSTER_CHARS>(boosters);
         booster_sprites.clear();
         text_generator.generate(BOOSTER_X, BOOSTER_Y,
                                 booster_string,
                                 booster_sprites);
 
-        // FOR TESTING PURPOSES ONLY; May be used as a game timer in the future!
-        bn::string<MAX_TEST_CHARS> test_string = bn::to_string<MAX_TEST_CHARS>(boosted_seconds_passed);
+        // FOR TESTING PURPOSES ONLY; doubles as a game timer!
+        bn::string<MAX_TEST_CHARS> test_string = bn::to_string<MAX_TEST_CHARS>(game_seconds_passed);
         test_sprites.clear();
         text_generator.generate(0, -70,
                                 test_string,

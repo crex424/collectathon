@@ -59,10 +59,9 @@ int main()
 
     // Will hold the sprites for the score
     bn::vector<bn::sprite_ptr, MAX_SCORE_CHARS> score_sprites = {};
-    bn::sprite_text_generator text_generator(common::fixed_8x16_sprite_font);
-
     bn::vector<bn::sprite_ptr, MAX_BOOSTER_CHARS> booster_sprites = {};
     bn::vector<bn::sprite_ptr, MAX_TEST_CHARS> test_sprites = {};
+    bn::sprite_text_generator text_generator(common::fixed_8x16_sprite_font);
 
     int score = 0;
 
@@ -179,11 +178,11 @@ int main()
                                 booster_sprites);
 
         // FOR TESTING PURPOSES ONLY; doubles as a game timer!
-        bn::string<MAX_TEST_CHARS> test_string = bn::to_string<MAX_TEST_CHARS>(game_seconds_passed);
+        /* bn::string<MAX_TEST_CHARS> test_string = bn::to_string<MAX_TEST_CHARS>(game_seconds_passed);
         test_sprites.clear();
         text_generator.generate(0, -70,
                                 test_string,
-                                test_sprites);
+                                test_sprites); */
 
         // Update RNG seed every frame so we don't get the same sequence of positions every time
         rng.update();

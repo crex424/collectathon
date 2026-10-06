@@ -18,7 +18,7 @@
 #include "bn_log.h"
 
 // Pixels / Frame player moves at
-static constexpr bn::fixed SPEED = 4;
+static constexpr bn::fixed SPEED = 1;
 
 // Width and height of the the player and treasure bounding boxes
 static constexpr bn::size PLAYER_SIZE = {8, 8};
@@ -85,12 +85,12 @@ int main()
         int boosted_ticks_elapsed = timer_boost.elapsed_ticks();
         int boosted_seconds_passed = boosted_ticks_elapsed / bn::timers::ticks_per_second();
 
-        if (bn::keypad::a_pressed() && boosters > 0 && !is_boosted)
+                if (bn::keypad::a_pressed() && boosters > 0 && !is_boosted)
         {
             boosters--;
             timer_boost.restart();
             is_boosted = true;
-            player_speed = SPEED.integer() + 3;
+            player_speed = SPEED.integer() + 5;
         }
         if (boosted_seconds_passed >= 3 && is_boosted)
         {

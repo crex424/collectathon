@@ -85,17 +85,17 @@ int main()
         int boosted_ticks_elapsed = timer_boost.elapsed_ticks();
         int boosted_seconds_passed = boosted_ticks_elapsed / bn::timers::ticks_per_second();
 
-                if (bn::keypad::a_pressed() && boosters > 0 && !is_boosted)
+        if (boosted_seconds_passed >= 3 && is_boosted)
+        {
+            player_speed = SPEED.integer();
+            is_boosted = false;
+        }
+        if (bn::keypad::a_pressed() && boosters > 0 && !is_boosted)
         {
             boosters--;
             timer_boost.restart();
             is_boosted = true;
             player_speed = SPEED.integer() + 5;
-        }
-        if (boosted_seconds_passed >= 3 && is_boosted)
-        {
-            player_speed = SPEED.integer();
-            is_boosted = false;
         }
 
         // LOGS FOR TESTING PURPOSES

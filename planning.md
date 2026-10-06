@@ -61,6 +61,9 @@ Nothing at the moment!
   incentivize using the boost even more.
 * Maybe add moving treasure sprites? Or perhaps an enemy sprite that either
   defeats the player or steals treasure?
+* Change Player and maybe treasure sprite to something more interesting.
+* Change character sprite when score hits a certain threshhold.
 
 ## Plan for implementing game
-
+* Add ability for the background color to change depending on score.
+  This would display the change in level in a simple way.

@@ -65,4 +65,5 @@ Nothing at the moment!
 * Change character sprite when score hits a certain threshhold.
 
 ## Plan for implementing game
-
+* Add ability for the background color to change depending on score.
+  This would display the change in level in a simple way.

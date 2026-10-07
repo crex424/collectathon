@@ -47,6 +47,11 @@ static constexpr int SCORE_Y = -70;
 static constexpr int BOOSTER_X = -80;
 static constexpr int BOOSTER_Y = -70;
 
+// Initial RGB values for backdrop, to be called every reset for consistency
+static constexpr int BACKDROP_R = 2;
+static constexpr int BACKDROP_G = 19;
+static constexpr int BACKDROP_B = 19;
+
 int main()
 {
     bn::core::init();
@@ -72,7 +77,7 @@ int main()
 
     bn::sprite_ptr player = bn::sprite_items::square.create_sprite(PLAYER_X, PLAYER_Y);
     bn::sprite_ptr treasure = bn::sprite_items::dot.create_sprite(TREASURE_X, TREASURE_Y);
-    bn::backdrop::set_color(bn::color(2, 19, 19));
+    bn::backdrop::set_color(bn::color(BACKDROP_R, BACKDROP_G, BACKDROP_B));
 
     while (true)
     {
@@ -156,12 +161,30 @@ int main()
             score++;
         }
 
+        // Simulates a change in Stages or Levels when score increases by ten, up to 30
+        if (score >= 10)
+        {
+            bn::backdrop::set_color(bn::color(0, 19, 0));
+        }
+
+        if (score >= 20)
+        {
+            // Using a bitwise shift to make easy conversions from 8-bit to 5-bit colors
+            bn::backdrop::set_color(bn::color(163 >> 3, 67 >> 3, 26 >> 3));
+        }
+
+        if (score >= 30)
+        {
+            bn::backdrop::set_color(bn::color(24 >> 3, 54 >> 3, 201 >> 3));
+        }
+
         // Update score display
         bn::string<MAX_SCORE_CHARS> score_string = bn::to_string<MAX_SCORE_CHARS>(score);
         if (bn::keypad::start_pressed())
         {
             score = 0;
             boosters = 3;
+            bn::backdrop::set_color(bn::color(BACKDROP_R, BACKDROP_G, BACKDROP_B));
             player = bn::sprite_items::square.create_sprite(PLAYER_X, PLAYER_Y);
             treasure = bn::sprite_items::dot.create_sprite(TREASURE_X, TREASURE_Y);
         }
@@ -186,10 +209,7 @@ int main()
 
         // Update RNG seed every frame so we don't get the same sequence of positions every time
         rng.update();
-        if (score >= 10)
-        {
-            bn::backdrop::set_color(bn::color(0, 19, 0));
-        }
+
         bn::core::update();
     }
 }

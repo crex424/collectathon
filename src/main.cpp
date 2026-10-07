@@ -37,11 +37,16 @@ static constexpr int TREASURE_Y = -45;
 // Number of characters required to show the longest numer possible in an int (-2147483647)
 static constexpr int MAX_SCORE_CHARS = 11;
 static constexpr int MAX_BOOSTER_CHARS = 1;
+static constexpr int MAX_LEVEL_CHARS = 20;
 static constexpr int MAX_TEST_CHARS = 3;
 
 // Score location
 static constexpr int SCORE_X = 70;
 static constexpr int SCORE_Y = -70;
+
+// Level Location
+static constexpr int LEVEL_X = -50;
+static constexpr int LEVEL_Y = 0;
 
 // Booster resource location
 static constexpr int BOOSTER_X = -80;
@@ -59,6 +64,7 @@ int main()
     // Creates and starts a timer for boost mechanic
     bn::timer timer_game;
     bn::timer timer_boost;
+    bn::timer timer_level;
 
     bn::random rng = bn::random();
 
@@ -66,6 +72,7 @@ int main()
     bn::vector<bn::sprite_ptr, MAX_SCORE_CHARS> score_sprites = {};
     bn::vector<bn::sprite_ptr, MAX_BOOSTER_CHARS> booster_sprites = {};
     bn::vector<bn::sprite_ptr, MAX_TEST_CHARS> test_sprites = {};
+    bn::vector<bn::sprite_ptr, MAX_LEVEL_CHARS> level_sprites = {};
     bn::sprite_text_generator text_generator(common::fixed_8x16_sprite_font);
 
     int score = 0;
@@ -166,6 +173,9 @@ int main()
         if (score == 10 && level == 1)
         {
             bn::backdrop::set_color(bn::color(0, 19, 0));
+            bn::string<MAX_LEVEL_CHARS> level_string = bn::to_string<MAX_LEVEL_CHARS>("LEVEL 1 CLEARED!");
+            text_generator.generate(LEVEL_X, LEVEL_Y, level_string, level_sprites);
+            timer_level.restart();
             level++;
         }
 
@@ -173,15 +183,25 @@ int main()
         {
             // Using a bitwise shift to make easy conversions from 8-bit to 5-bit colors
             bn::backdrop::set_color(bn::color(163 >> 3, 67 >> 3, 26 >> 3));
+            // Level cleared sprite displayed
+            bn::string<MAX_LEVEL_CHARS> level_string = bn::to_string<MAX_LEVEL_CHARS>("LEVEL 2 CLEARED!");
+            text_generator.generate(LEVEL_X, LEVEL_Y, level_string, level_sprites);
+            timer_level.restart();
             level++;
         }
 
         if (score == 30 && level == 3)
         {
             bn::backdrop::set_color(bn::color(24 >> 3, 54 >> 3, 201 >> 3));
+            bn::string<MAX_LEVEL_CHARS> level_string = bn::to_string<MAX_LEVEL_CHARS>("LEVEL 3 CLEARED!");
+            text_generator.generate(LEVEL_X, LEVEL_Y, level_string, level_sprites);
+            timer_level.restart();
             level++;
         }
-
+        if ((timer_level.elapsed_ticks() / bn::timers::ticks_per_second()) >= 3)
+        {
+            level_sprites.clear();
+        }
         // Update score display
         bn::string<MAX_SCORE_CHARS> score_string = bn::to_string<MAX_SCORE_CHARS>(score);
         if (bn::keypad::start_pressed())

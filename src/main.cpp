@@ -75,6 +75,8 @@ int main()
     int player_speed = SPEED.integer();
     bool is_boosted = false;
 
+    int level = 1;
+
     bn::sprite_ptr player = bn::sprite_items::square.create_sprite(PLAYER_X, PLAYER_Y);
     bn::sprite_ptr treasure = bn::sprite_items::dot.create_sprite(TREASURE_X, TREASURE_Y);
     bn::backdrop::set_color(bn::color(BACKDROP_R, BACKDROP_G, BACKDROP_B));
@@ -157,25 +159,27 @@ int main()
             int new_x = rng.get_int(MIN_X, MAX_X);
             int new_y = rng.get_int(MIN_Y, MAX_Y);
             treasure.set_position(new_x, new_y);
-
             score++;
         }
 
         // Simulates a change in Stages or Levels when score increases by ten, up to 30
-        if (score >= 10)
+        if (score == 10 && level == 1)
         {
             bn::backdrop::set_color(bn::color(0, 19, 0));
+            level++;
         }
 
-        if (score >= 20)
+        if (score == 20 && level == 2)
         {
             // Using a bitwise shift to make easy conversions from 8-bit to 5-bit colors
             bn::backdrop::set_color(bn::color(163 >> 3, 67 >> 3, 26 >> 3));
+            level++;
         }
 
-        if (score >= 30)
+        if (score == 30 && level == 3)
         {
             bn::backdrop::set_color(bn::color(24 >> 3, 54 >> 3, 201 >> 3));
+            level++;
         }
 
         // Update score display

@@ -25,6 +25,7 @@ static constexpr bn::fixed SPEED = 1;
 // Width and height of the the player and treasure bounding boxes
 static constexpr bn::size PLAYER_SIZE = {8, 8};
 static constexpr bn::size TREASURE_SIZE = {8, 8};
+static constexpr bn::size TREASURE_HITBOX_SIZE = {8, 8};
 
 // Full bounds of the screen
 static constexpr int MIN_Y = -bn::display::height() / 2;
@@ -97,6 +98,10 @@ int main()
     bn::sprite_ptr player = bn::sprite_items::square.create_sprite(PLAYER_X, PLAYER_Y);
     bn::sprite_ptr treasure = bn::sprite_items::dot.create_sprite(TREASURE_X, TREASURE_Y);
 
+    // Treasure scale for animation
+    treasure.set_horizontal_scale(1);
+    bool is_treasure_growing = false;
+
     // Initializes backdrop to a white color as game loads
     bn::backdrop::set_color(bn::color(0, 0, 0));
 
@@ -109,6 +114,9 @@ int main()
         // Game Timer
         int game_ticks_elapsed = timer_game.elapsed_ticks();
         int game_seconds_passed = game_ticks_elapsed / bn::timers::ticks_per_second();
+
+        // Treasure Scale
+        bn::fixed treasure_h_scale = treasure.horizontal_scale();
 
         // Sprite Transparancy
         bn::fixed t_alpha = bn::blending::transparency_alpha();
@@ -175,8 +183,8 @@ int main()
                                         PLAYER_SIZE.height());
         bn::rect treasure_rect = bn::rect(treasure.x().round_integer(),
                                           treasure.y().round_integer(),
-                                          TREASURE_SIZE.width(),
-                                          TREASURE_SIZE.height());
+                                          TREASURE_HITBOX_SIZE.width(),
+                                          TREASURE_HITBOX_SIZE.height());
 
         // If the bounding boxes overlap, set the treasure to a new location an increase score
         if (player_rect.intersects(treasure_rect))
@@ -186,6 +194,24 @@ int main()
             int new_y = rng.get_int(MIN_Y, MAX_Y);
             treasure.set_position(new_x, new_y);
             score++;
+        }
+
+        // Animates treasure sprite
+        if (is_treasure_growing)
+        {
+            treasure.set_horizontal_scale(bn::min(treasure_h_scale + 0.1, bn::fixed(1)));
+            if (treasure_h_scale == 1)
+            {
+                is_treasure_growing = false;
+            }
+        }
+        if (!is_treasure_growing)
+        {
+            treasure.set_horizontal_scale(bn::max(treasure_h_scale - 0.1, bn::fixed(0.01)));
+            if (treasure_h_scale == 0.01)
+            {
+                is_treasure_growing = true;
+            }
         }
 
         level_sprites.clear();
@@ -199,8 +225,10 @@ int main()
             level_cleared_sprites[i].set_blending_enabled(true);
 
             // When not displaying text sprites, makes sprites invisible to prevent masking player sprite
-            if (t_alpha == 0) level_cleared_sprites[i].set_visible(false);
-            else level_cleared_sprites[i].set_visible(true);
+            if (t_alpha == 0)
+                level_cleared_sprites[i].set_visible(false);
+            else
+                level_cleared_sprites[i].set_visible(true);
         }
 
         // Simulates a change in Stages or Levels when score increases to max amount, up to level 4

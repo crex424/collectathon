@@ -75,6 +75,7 @@ Nothing at the moment!
 * Change character sprite when score hits a certain threshhold.
 
 ## To Be Implemented
-* ~~Add ability for the background color to change depending on score.
-  This would display the change in level in a simple way.~~
-* Add a fade in and fade out to the level clear sprites.
+- [x] Add ability for the background color to change depending on score.
+      This would display the change in level in a simple way.
+- [x] Add a fade in and fade out to the level clear sprites.
+- [x] Add simple animation to treasure sprite.

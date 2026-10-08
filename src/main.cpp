@@ -90,6 +90,8 @@ int main()
 
     // Stage Tracker
     int level = 1;
+    bool is_cleared = false; // Used for fade in and fade out
+    bn::blending::set_transparency_alpha(0);
 
     // Player and Treasure Sprites
     bn::sprite_ptr player = bn::sprite_items::square.create_sprite(PLAYER_X, PLAYER_Y);
@@ -100,13 +102,16 @@ int main()
 
     // Initializes Level String starting with level 1
     bn::string<MAX_LEVEL_CHARS> level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 1 - Lake");
-    bn::string<MAX_LEVEL_CHARS> level_cleared_string = bn::to_string<MAX_LEVEL_CHARS>("LEVEL 1 CLEARED!");
+    bn::string<MAX_LEVEL_CHARS> level_cleared_string;
 
     while (true)
     {
         // Game Timer
         int game_ticks_elapsed = timer_game.elapsed_ticks();
         int game_seconds_passed = game_ticks_elapsed / bn::timers::ticks_per_second();
+
+        // Sprite Transparancy
+        bn::fixed t_alpha = bn::blending::transparency_alpha();
 
         // Activate Boost
         if (bn::keypad::a_pressed() && boosters > 0 && !is_boosted)
@@ -188,11 +193,20 @@ int main()
 
         level_cleared_sprites.clear();
         text_generator.generate(LEVEL_CLEARED_X, LEVEL_CLEARED_Y, level_cleared_string, level_cleared_sprites);
-        level_cleared_sprites[0].set_blending_enabled(true); // Allows Sprite to be transparent or not
+        for (int i = 0; i < level_cleared_sprites.size(); i++)
+        {
+            // Allows Sprite to be transparent or not
+            level_cleared_sprites[i].set_blending_enabled(true);
 
-        // Simulates a change in Stages or Levels when score increases by ten, up to 30
+            // When not displaying text sprites, makes sprites invisible to prevent masking player sprite
+            if (t_alpha == 0) level_cleared_sprites[i].set_visible(false);
+            else level_cleared_sprites[i].set_visible(true);
+        }
+
+        // Simulates a change in Stages or Levels when score increases to max amount, up to level 4
         switch (level)
         {
+        default:
         case 1:
             bn::backdrop::set_color(bn::color(2, 19, 19));
             max_score = 10;
@@ -200,14 +214,20 @@ int main()
         case 2:
             bn::backdrop::set_color(bn::color(2, 19, 19));
             level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 2 - Forest");
+            level_cleared_string = bn::to_string<MAX_LEVEL_CHARS>("LEVEL 1 CLEARED!");
+            max_score = 12;
             break;
         case 3:
             bn::backdrop::set_color(bn::color(2, 19, 19));
             level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 3 - Plateau");
+            level_cleared_string = bn::to_string<MAX_LEVEL_CHARS>("LEVEL 2 CLEARED!");
+            max_score = 14;
             break;
         case 4:
             bn::backdrop::set_color(bn::color(2, 19, 19));
             level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 4 - Ocean");
+            level_cleared_string = bn::to_string<MAX_LEVEL_CHARS>("LEVEL 3 CLEARED!");
+            max_score = 16;
             break;
         }
 
@@ -215,13 +235,23 @@ int main()
         {
             score = 0;
             level++;
-            bn::blending_transparency_alpha_to_action level_cleared_sprites();
+            is_cleared = true;
             timer_level_clear.restart();
         }
-       /* if ((timer_level_clear.elapsed_ticks() / bn::timers::ticks_per_second()) >= 3)
+
+        // When the level is cleared, fade in the level cleared sprites, and vice versa after three seconds have passed
+        if (is_cleared)
         {
-            level_cleared_sprites.clear();
-        } */
+            bn::blending::set_transparency_alpha(bn::min(bn::blending::transparency_alpha() + 0.0167, bn::fixed(1)));
+        }
+        else
+        {
+            bn::blending::set_transparency_alpha(bn::max(bn::blending::transparency_alpha() - 0.0167, bn::fixed(0)));
+        }
+        if ((timer_level_clear.elapsed_ticks() / bn::timers::ticks_per_second()) >= 3)
+        {
+            is_cleared = false;
+        }
 
         // Update score display
         bn::string<MAX_SCORE_CHARS> score_string = bn::to_string<MAX_SCORE_CHARS>(score);

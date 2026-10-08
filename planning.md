@@ -1,13 +1,21 @@
-A place to write your findings and plans
+# Development Planning / Implemenetation Documentation
+
+Use this page to write down brainstorming features and planned features of the game. This page is also used to write down coding examples we learn and implemenet into the game as a reference.
 
 ## Understanding
+
+This section is to be used as a guidebook for bugs and concepts we learn about during this game's development.
+
+### General Terminology
 
 * MIN_X is the border on the left of the x axis.
 * MAX_X is the border on the right of the x axis.
 * MIN_Y is the border of the top of the y axis.
 * MAX_Y is the border of the bottom of the y axis.
 
-When using bn::timer and bn::timers, always make sure to caluclate elapsed time directly when using conditionals. This is because calulated values stored in a variable are essentially cached, and that value is always used until the variable re-calculates the value in the next game loop.
+### Butano Timers and Order of Calculation
+
+When using `bn::timer` class and `bn::timers` class, always make sure to calculate elapsed time directly when using conditionals. This is because calulated values stored in a variable are essentially cached, and that value is always used until the variable re-calculates the value in the next game loop.
 ```c++
     int boosted_ticks_elapsed = timer_boost.elapsed_ticks();
     int boosted_seconds_passed = boosted_ticks_elapsed / bn::timers::ticks_per_second();
@@ -46,11 +54,13 @@ When running this code, because we are calculating the value of `boosted_seconds
 ```
 Instead of using a cached value from `int boosted_seconds_passed`, we now directly calculate the elapsed time live, giving us an much more exact and precise value, preventing the boost mechanic from failing to update the player's movement as expected. This was quite the difficult bug to find, and the logic behind the bug is insidious, so caution is always key when dealing with game loops and cached values!
 
+### Sprite Manipulation
+
 ## Planning required changes
 
 Nothing at the moment!
 
-## Brainstorming game ideas
+## Brainstorming Game Feature Ideas
 
 * Backdrop changes to a random color evert time the score is increased by 10.
 * Add a way to recover boosts without resetting.
@@ -64,6 +74,7 @@ Nothing at the moment!
 * Change Player and maybe treasure sprite to something more interesting.
 * Change character sprite when score hits a certain threshhold.
 
-## Plan for implementing game
-* Add ability for the background color to change depending on score.
-  This would display the change in level in a simple way.
+## To Be Implemented
+* ~~Add ability for the background color to change depending on score.
+  This would display the change in level in a simple way.~~
+* Add a fade in and fade out to the level clear sprites.

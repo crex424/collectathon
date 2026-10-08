@@ -80,6 +80,12 @@ int main()
     // Text Generator for UI Elements
     bn::sprite_text_generator text_generator(common::fixed_8x16_sprite_font);
 
+    // Player and Treasure Sprites
+    bn::sprite_ptr player = bn::sprite_items::square.create_sprite(PLAYER_X, PLAYER_Y);
+    bn::sprite_ptr treasure = bn::sprite_items::dot.create_sprite(TREASURE_X, TREASURE_Y);
+    treasure.set_horizontal_scale(1);
+    bn::fixed treasure_h_scale;
+
     // Dynamic Score Variables
     int score = 0;
     int previous_score = score;
@@ -102,19 +108,25 @@ int main()
     int previous_level = level;
     bool is_cleared = false; // Used for fade in and fade out
     bn::blending::set_transparency_alpha(0);
+    bn::fixed previous_alpha = bn::blending::transparency_alpha();
 
     bn::string<MAX_LEVEL_CHARS> level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 1 - Lake");
-    bn::string<MAX_LEVEL_CHARS> level_cleared_string;
+    bn::string<MAX_LEVEL_CHARS> level_cleared_string = bn::to_string<MAX_LEVEL_CHARS>("LEVEL 1 CLEARED");
 
     text_generator.generate(LEVEL_X, LEVEL_Y, level_string, level_sprites);
     text_generator.generate(LEVEL_CLEARED_X, LEVEL_CLEARED_Y, level_cleared_string, level_cleared_sprites);
 
-    // Player and Treasure Sprites
-    bn::sprite_ptr player = bn::sprite_items::square.create_sprite(PLAYER_X, PLAYER_Y);
-    bn::sprite_ptr treasure = bn::sprite_items::dot.create_sprite(TREASURE_X, TREASURE_Y);
+    // Iterates through all vector sprite ptr elements to toggle blending on and set invisible
+    for (int i = 0; i < level_cleared_sprites.size(); i++)
+    {
+        // Allows Sprite to be transparent or not
+        level_cleared_sprites[i].set_blending_enabled(true);
+
+        // Sets all vector sprite_ptr elements to be invisible
+        level_cleared_sprites[i].set_visible(false);
+    }
 
     // Treasure scale for animation
-    treasure.set_horizontal_scale(1);
     bool is_treasure_growing = false;
 
     // Initializes backdrop to a white color as game loads
@@ -129,10 +141,7 @@ int main()
         int game_seconds_passed = game_ticks_elapsed / bn::timers::ticks_per_second();
 
         // Treasure Scale
-        bn::fixed treasure_h_scale = treasure.horizontal_scale();
-
-        // Sprite Transparancy
-        bn::fixed t_alpha = bn::blending::transparency_alpha();
+        treasure_h_scale = treasure.horizontal_scale();
 
         // Activate Boost
         if (bn::keypad::a_pressed() && boosters > 0 && !is_boosted)
@@ -212,16 +221,16 @@ int main()
         // Animates treasure sprite
         if (is_treasure_growing)
         {
-            treasure.set_horizontal_scale(bn::min(treasure_h_scale + 0.1, bn::fixed(1)));
-            if (treasure_h_scale == 1)
+            treasure_h_scale += 0.1;
+            if (treasure_h_scale >= 1)
             {
                 is_treasure_growing = false;
             }
         }
         if (!is_treasure_growing)
         {
-            treasure.set_horizontal_scale(bn::max(treasure_h_scale - 0.1, bn::fixed(0.01)));
-            if (treasure_h_scale == 0.01)
+            treasure_h_scale -= 0.1;
+            if (treasure_h_scale <= 0.01)
             {
                 is_treasure_growing = true;
             }
@@ -243,24 +252,27 @@ int main()
         case 1:
             bn::backdrop::set_color(bn::color(2, 19, 19));
             level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 1 - Lake");
-            level_cleared_string = bn::to_string<MAX_LEVEL_CHARS>("LEVEL 1 CLEARED!");
             max_score = 10;
             break;
         case 2:
             bn::backdrop::set_color(bn::color(0, 19, 0));
             level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 2 - Forest");
-            level_cleared_string = bn::to_string<MAX_LEVEL_CHARS>("LEVEL 2 CLEARED!");
+            level_cleared_string = bn::to_string<MAX_LEVEL_CHARS>("LEVEL 1 CLEARED!");
+
             max_score = 12;
             break;
         case 3:
             bn::backdrop::set_color(bn::color(163 >> 3, 67 >> 3, 26 >> 3));
             level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 3 - Plateau");
-            level_cleared_string = bn::to_string<MAX_LEVEL_CHARS>("LEVEL 3 CLEARED!");
+            level_cleared_string = bn::to_string<MAX_LEVEL_CHARS>("LEVEL 2 CLEARED!");
+
             max_score = 14;
             break;
         case 4:
             bn::backdrop::set_color(bn::color(24 >> 3, 54 >> 3, 201 >> 3));
             level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 4 - Ocean");
+            level_cleared_string = bn::to_string<MAX_LEVEL_CHARS>("LEVEL 3 CLEARED!");
+
             max_score = 9999;
             break;
         }
@@ -278,11 +290,8 @@ int main()
                 // Allows Sprite to be transparent or not
                 level_cleared_sprites[i].set_blending_enabled(true);
 
-                // When not displaying text sprites, makes sprites invisible to prevent masking player sprite
-                if (t_alpha == 0)
-                    level_cleared_sprites[i].set_visible(false);
-                else
-                    level_cleared_sprites[i].set_visible(true);
+                // Display sprites now that we need to
+                level_cleared_sprites[i].set_visible(true);
             }
         }
 
@@ -299,6 +308,14 @@ int main()
         {
             is_cleared = false;
         }
+        if (bn::blending::transparency_alpha() == 0 && bn::blending::transparency_alpha() != previous_alpha)
+        {
+            for (int i = 0; i < level_cleared_sprites.size(); i++)
+            {
+                // Display sprites now that we need to
+                level_cleared_sprites[i].set_visible(false);
+            }
+        }
 
         // Reset Logic
         if (bn::keypad::start_pressed())
@@ -306,6 +323,9 @@ int main()
             score = 0;
             boosters = 3;
             level = 1;
+
+            // Instead of recreating player and treasure sprites every reset,
+            // simply move them back to their initial positions
             player.set_position(PLAYER_X, PLAYER_Y);
             treasure.set_position(TREASURE_X, TREASURE_Y);
         }
@@ -331,13 +351,6 @@ int main()
                                     booster_sprites);
         }
 
-        // FOR TESTING PURPOSES ONLY; doubles as a game timer!
-        /* bn::string<MAX_TEST_CHARS> test_string = bn::to_string<MAX_TEST_CHARS>(game_seconds_passed);
-        test_sprites.clear();
-        text_generator.generate(0, -70,
-                                test_string,
-                                test_sprites); */
-
         // Update RNG seed every frame so we don't get the same sequence of positions every time
         rng.update();
 
@@ -345,6 +358,9 @@ int main()
         previous_score = score;
         previous_boost_count = boosters;
         previous_level = level;
+        previous_alpha = bn::blending::transparency_alpha();
+
+        treasure.set_horizontal_scale(treasure_h_scale);
 
         bn::core::update();
     }

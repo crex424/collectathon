@@ -100,8 +100,8 @@ int main()
     // Initializes backdrop to a white color as game loads
     bn::backdrop::set_color(bn::color(0, 0, 0));
 
-    // Initializes Level String starting with level 1
-    bn::string<MAX_LEVEL_CHARS> level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 1 - Lake");
+    // Initializes level and level clear strings
+    bn::string<MAX_LEVEL_CHARS> level_string;
     bn::string<MAX_LEVEL_CHARS> level_cleared_string;
 
     while (true)
@@ -209,22 +209,23 @@ int main()
         default:
         case 1:
             bn::backdrop::set_color(bn::color(2, 19, 19));
+            level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 1 - Lake");
             max_score = 10;
             break;
         case 2:
-            bn::backdrop::set_color(bn::color(2, 19, 19));
+            bn::backdrop::set_color(bn::color(0, 19, 0));
             level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 2 - Forest");
             level_cleared_string = bn::to_string<MAX_LEVEL_CHARS>("LEVEL 1 CLEARED!");
             max_score = 12;
             break;
         case 3:
-            bn::backdrop::set_color(bn::color(2, 19, 19));
+            bn::backdrop::set_color(bn::color(163 >> 3, 67 >> 3, 26 >> 3));
             level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 3 - Plateau");
             level_cleared_string = bn::to_string<MAX_LEVEL_CHARS>("LEVEL 2 CLEARED!");
             max_score = 14;
             break;
         case 4:
-            bn::backdrop::set_color(bn::color(2, 19, 19));
+            bn::backdrop::set_color(bn::color(24 >> 3, 54 >> 3, 201 >> 3));
             level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 4 - Ocean");
             level_cleared_string = bn::to_string<MAX_LEVEL_CHARS>("LEVEL 3 CLEARED!");
             max_score = 16;

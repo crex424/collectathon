@@ -81,18 +81,33 @@ int main()
     bn::sprite_text_generator text_generator(common::fixed_8x16_sprite_font);
 
     // Dynamic Score Variables
-    int max_score = 0;
     int score = 0;
+    int previous_score = score;
+    int max_score = 10;
+
+    bn::string<MAX_SCORE_CHARS> score_string = bn::to_string<MAX_SCORE_CHARS>(score);
+    text_generator.generate(SCORE_X, SCORE_Y, "SCORE " + score_string, score_sprites);
 
     // Non-static variables for the boost mechanic
     int boosters = 3;
+    int previous_boost_count = boosters;
     int player_speed = SPEED.integer();
     bool is_boosted = false;
 
+    bn::string<MAX_BOOSTER_CHARS> booster_string = bn::to_string<MAX_BOOSTER_CHARS>(boosters);
+    text_generator.generate(BOOSTER_X, BOOSTER_Y, "BOOST " + booster_string, booster_sprites);
+
     // Stage Tracker
     int level = 1;
+    int previous_level = level;
     bool is_cleared = false; // Used for fade in and fade out
     bn::blending::set_transparency_alpha(0);
+
+    bn::string<MAX_LEVEL_CHARS> level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 1 - Lake");
+    bn::string<MAX_LEVEL_CHARS> level_cleared_string;
+
+    text_generator.generate(LEVEL_X, LEVEL_Y, level_string, level_sprites);
+    text_generator.generate(LEVEL_CLEARED_X, LEVEL_CLEARED_Y, level_cleared_string, level_cleared_sprites);
 
     // Player and Treasure Sprites
     bn::sprite_ptr player = bn::sprite_items::square.create_sprite(PLAYER_X, PLAYER_Y);
@@ -106,8 +121,6 @@ int main()
     bn::backdrop::set_color(bn::color(0, 0, 0));
 
     // Initializes level and level clear strings
-    bn::string<MAX_LEVEL_CHARS> level_string;
-    bn::string<MAX_LEVEL_CHARS> level_cleared_string;
 
     while (true)
     {
@@ -214,21 +227,13 @@ int main()
             }
         }
 
-        level_sprites.clear();
-        text_generator.generate(LEVEL_X, LEVEL_Y, level_string, level_sprites);
-
-        level_cleared_sprites.clear();
-        text_generator.generate(LEVEL_CLEARED_X, LEVEL_CLEARED_Y, level_cleared_string, level_cleared_sprites);
-        for (int i = 0; i < level_cleared_sprites.size(); i++)
+        // Increases level counter when score reaches max
+        if (score >= max_score)
         {
-            // Allows Sprite to be transparent or not
-            level_cleared_sprites[i].set_blending_enabled(true);
-
-            // When not displaying text sprites, makes sprites invisible to prevent masking player sprite
-            if (t_alpha == 0)
-                level_cleared_sprites[i].set_visible(false);
-            else
-                level_cleared_sprites[i].set_visible(true);
+            score = 0;
+            level++;
+            is_cleared = true;
+            timer_level_clear.restart();
         }
 
         // Simulates a change in Stages or Levels when score increases to max amount, up to level 4
@@ -238,34 +243,47 @@ int main()
         case 1:
             bn::backdrop::set_color(bn::color(2, 19, 19));
             level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 1 - Lake");
+            level_cleared_string = bn::to_string<MAX_LEVEL_CHARS>("LEVEL 1 CLEARED!");
             max_score = 10;
             break;
         case 2:
             bn::backdrop::set_color(bn::color(0, 19, 0));
             level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 2 - Forest");
-            level_cleared_string = bn::to_string<MAX_LEVEL_CHARS>("LEVEL 1 CLEARED!");
+            level_cleared_string = bn::to_string<MAX_LEVEL_CHARS>("LEVEL 2 CLEARED!");
             max_score = 12;
             break;
         case 3:
             bn::backdrop::set_color(bn::color(163 >> 3, 67 >> 3, 26 >> 3));
             level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 3 - Plateau");
-            level_cleared_string = bn::to_string<MAX_LEVEL_CHARS>("LEVEL 2 CLEARED!");
+            level_cleared_string = bn::to_string<MAX_LEVEL_CHARS>("LEVEL 3 CLEARED!");
             max_score = 14;
             break;
         case 4:
             bn::backdrop::set_color(bn::color(24 >> 3, 54 >> 3, 201 >> 3));
             level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 4 - Ocean");
-            level_cleared_string = bn::to_string<MAX_LEVEL_CHARS>("LEVEL 3 CLEARED!");
-            max_score = 16;
+            max_score = 9999;
             break;
         }
 
-        if (score >= max_score)
+        if (level != previous_level)
         {
-            score = 0;
-            level++;
-            is_cleared = true;
-            timer_level_clear.restart();
+            level_sprites.clear();
+            text_generator.generate(LEVEL_X, LEVEL_Y, level_string, level_sprites);
+
+            level_cleared_sprites.clear();
+            text_generator.generate(LEVEL_CLEARED_X, LEVEL_CLEARED_Y, level_cleared_string, level_cleared_sprites);
+
+            for (int i = 0; i < level_cleared_sprites.size(); i++)
+            {
+                // Allows Sprite to be transparent or not
+                level_cleared_sprites[i].set_blending_enabled(true);
+
+                // When not displaying text sprites, makes sprites invisible to prevent masking player sprite
+                if (t_alpha == 0)
+                    level_cleared_sprites[i].set_visible(false);
+                else
+                    level_cleared_sprites[i].set_visible(true);
+            }
         }
 
         // When the level is cleared, fade in the level cleared sprites, and vice versa after three seconds have passed
@@ -282,27 +300,36 @@ int main()
             is_cleared = false;
         }
 
-        // Update score display
-        bn::string<MAX_SCORE_CHARS> score_string = bn::to_string<MAX_SCORE_CHARS>(score);
+        // Reset Logic
         if (bn::keypad::start_pressed())
         {
             score = 0;
             boosters = 3;
             level = 1;
-            player = bn::sprite_items::square.create_sprite(PLAYER_X, PLAYER_Y);
-            treasure = bn::sprite_items::dot.create_sprite(TREASURE_X, TREASURE_Y);
+            player.set_position(PLAYER_X, PLAYER_Y);
+            treasure.set_position(TREASURE_X, TREASURE_Y);
         }
-        score_sprites.clear();
-        text_generator.generate(SCORE_X, SCORE_Y,
-                                "SCORE " + score_string,
-                                score_sprites);
+
+        // Update Score Display
+        score_string = bn::to_string<MAX_SCORE_CHARS>(score);
+        if (score != previous_score)
+        {
+            // Avoids wasting resources by only regenerating score text when score changes
+            score_sprites.clear();
+            text_generator.generate(SCORE_X, SCORE_Y,
+                                    "SCORE " + score_string,
+                                    score_sprites);
+        }
 
         // Update booster resource display
-        bn::string<MAX_BOOSTER_CHARS> booster_string = bn::to_string<MAX_BOOSTER_CHARS>(boosters);
-        booster_sprites.clear();
-        text_generator.generate(BOOSTER_X, BOOSTER_Y,
-                                "BOOST " + booster_string,
-                                booster_sprites);
+        booster_string = bn::to_string<MAX_BOOSTER_CHARS>(boosters);
+        if (boosters != previous_boost_count)
+        {
+            booster_sprites.clear();
+            text_generator.generate(BOOSTER_X, BOOSTER_Y,
+                                    "BOOST " + booster_string,
+                                    booster_sprites);
+        }
 
         // FOR TESTING PURPOSES ONLY; doubles as a game timer!
         /* bn::string<MAX_TEST_CHARS> test_string = bn::to_string<MAX_TEST_CHARS>(game_seconds_passed);
@@ -313,6 +340,11 @@ int main()
 
         // Update RNG seed every frame so we don't get the same sequence of positions every time
         rng.update();
+
+        // Updates previous couts of UI elements to current counts
+        previous_score = score;
+        previous_boost_count = boosters;
+        previous_level = level;
 
         bn::core::update();
     }

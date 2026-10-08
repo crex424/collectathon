@@ -34,22 +34,22 @@ static constexpr int PLAYER_Y = -25;
 static constexpr int TREASURE_X = 60;
 static constexpr int TREASURE_Y = -45;
 
-// Number of characters required to show the longest numer possible in an int (-2147483647)
+// Max character length for each UI element
 static constexpr int MAX_SCORE_CHARS = 11;
-static constexpr int MAX_BOOSTER_CHARS = 1;
+static constexpr int MAX_BOOSTER_CHARS = 8;
 static constexpr int MAX_LEVEL_CHARS = 20;
 static constexpr int MAX_TEST_CHARS = 3;
 
 // Score location
-static constexpr int SCORE_X = 70;
+static constexpr int SCORE_X = 43;
 static constexpr int SCORE_Y = -70;
 
 // Level Location
-static constexpr int LEVEL_X = -50;
+static constexpr int LEVEL_X = -64;
 static constexpr int LEVEL_Y = 0;
 
 // Booster resource location
-static constexpr int BOOSTER_X = -80;
+static constexpr int BOOSTER_X = -107;
 static constexpr int BOOSTER_Y = -70;
 
 // Initial RGB values for backdrop, to be called every reset for consistency
@@ -68,7 +68,7 @@ int main()
 
     bn::random rng = bn::random();
 
-    // Will hold the sprites for the score
+    // Will hold the sprites for the various UI elements
     bn::vector<bn::sprite_ptr, MAX_SCORE_CHARS> score_sprites = {};
     bn::vector<bn::sprite_ptr, MAX_BOOSTER_CHARS> booster_sprites = {};
     bn::vector<bn::sprite_ptr, MAX_TEST_CHARS> test_sprites = {};
@@ -77,11 +77,12 @@ int main()
 
     int score = 0;
 
-    // Everything related to boosters, including amount left and modifiers
+    // Non-static variables for the boost mechanic
     int boosters = 3;
     int player_speed = SPEED.integer();
     bool is_boosted = false;
 
+    // Stage Tracker
     int level = 1;
 
     bn::sprite_ptr player = bn::sprite_items::square.create_sprite(PLAYER_X, PLAYER_Y);
@@ -170,6 +171,15 @@ int main()
         }
 
         // Simulates a change in Stages or Levels when score increases by ten, up to 30
+        switch (level) {
+            case 1:
+                
+            case 2:
+            case 3:
+            case 4:
+        }
+
+
         if (score == 10 && level == 1)
         {
             bn::backdrop::set_color(bn::color(0, 19, 0));
@@ -214,14 +224,14 @@ int main()
         }
         score_sprites.clear();
         text_generator.generate(SCORE_X, SCORE_Y,
-                                score_string,
+                                "SCORE " + score_string,
                                 score_sprites);
 
         // Update booster resource display
         bn::string<MAX_BOOSTER_CHARS> booster_string = bn::to_string<MAX_BOOSTER_CHARS>(boosters);
         booster_sprites.clear();
         text_generator.generate(BOOSTER_X, BOOSTER_Y,
-                                booster_string,
+                                "BOOST " + booster_string,
                                 booster_sprites);
 
         // FOR TESTING PURPOSES ONLY; doubles as a game timer!

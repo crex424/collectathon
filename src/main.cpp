@@ -14,7 +14,7 @@
 #include <bn_blending.h>
 #include <bn_blending_actions.h>
 
-#include "bn_sprite_items_dot.h"
+#include "bn_sprite_items_treasure.h"
 #include "bn_sprite_items_square.h"
 #include "common_fixed_8x16_font.h"
 #include "bn_log.h"
@@ -85,7 +85,7 @@ int main()
 
     // Player and Treasure Sprites
     bn::sprite_ptr player = bn::sprite_items::square.create_sprite(PLAYER_X, PLAYER_Y);
-    bn::sprite_ptr treasure = bn::sprite_items::dot.create_sprite(TREASURE_X, TREASURE_Y);
+    bn::sprite_ptr treasure = bn::sprite_items::treasure.create_sprite(TREASURE_X, TREASURE_Y);
     treasure.set_horizontal_scale(1);
     bn::fixed treasure_h_scale = treasure.horizontal_scale();
 

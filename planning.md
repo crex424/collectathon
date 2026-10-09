@@ -64,14 +64,10 @@ Nothing at the moment!
 
 * Backdrop changes to a random color evert time the score is increased by 10.
 * Add a way to recover boosts without resetting.
-* Add a proper game timer and clean up the UI.
-* If game timer is implemented, perhaps have it count down, allowing for the player to
-  gain a high score?
 * Add new treasure sprites that are worth more but only live for a very short time to
   incentivize using the boost even more.
 * Maybe add moving treasure sprites? Or perhaps an enemy sprite that either
   defeats the player or steals treasure?
-* Change Player and maybe treasure sprite to something more interesting.
 * Change character sprite when score hits a certain threshhold.
 
 ## To Be Implemented
@@ -79,3 +75,14 @@ Nothing at the moment!
       This would display the change in level in a simple way.
 - [x] Add a fade in and fade out to the level clear sprites.
 - [x] Add simple animation to treasure sprite.
+- [ ] Change Player and maybe treasure sprite to something more interesting. (Partialy Implemented)
+
+### Campbell Plans
+- [ ] Add sprite background
+- [ ] Remove level indicator on the bottom
+- [ ] Replace level cleared with level indicator instead to reduce screen clutter and sprite count
+
+### Esteban Plans
+- [ ] Reimplement game timer that counts downward, ending the game at time zero.
+- [ ] Add a "game over" screen
+- [ ] Add boost sprite as a way to replenish boost count

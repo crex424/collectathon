@@ -19,10 +19,13 @@
 #include "common_fixed_8x16_font.h"
 #include "bn_log.h"
 
+#include "functions.hpp"
+#include "Level.hpp"
+
 // Pixels / Frame player moves at
 static constexpr bn::fixed SPEED = 1;
 
-// Width and height of the the player and treasure bounding boxes
+// Width and height of the player and treasure bounding boxes
 static constexpr bn::size PLAYER_SIZE = {8, 8};
 static constexpr bn::size TREASURE_SIZE = {8, 8};
 static constexpr bn::size TREASURE_HITBOX_SIZE = {8, 8};
@@ -84,7 +87,7 @@ int main()
     bn::sprite_ptr player = bn::sprite_items::square.create_sprite(PLAYER_X, PLAYER_Y);
     bn::sprite_ptr treasure = bn::sprite_items::dot.create_sprite(TREASURE_X, TREASURE_Y);
     treasure.set_horizontal_scale(1);
-    bn::fixed treasure_h_scale;
+    bn::fixed treasure_h_scale = treasure.horizontal_scale();
 
     // Dynamic Score Variables
     int score = 0;
@@ -104,8 +107,8 @@ int main()
     text_generator.generate(BOOSTER_X, BOOSTER_Y, "BOOST " + booster_string, booster_sprites);
 
     // Stage Tracker
-    int level = 1;
-    int previous_level = level;
+    Level level = Level::LAKE;
+    Level previous_level = Level::LAKE;
     bool is_cleared = false; // Used for fade in and fade out
     bn::blending::set_transparency_alpha(0);
     bn::fixed previous_alpha = bn::blending::transparency_alpha();
@@ -240,7 +243,7 @@ int main()
         if (score >= max_score)
         {
             score = 0;
-            level++;
+            level_plus(level);
             is_cleared = true;
             timer_level_clear.restart();
         }
@@ -249,30 +252,27 @@ int main()
         switch (level)
         {
         default:
-        case 1:
+        case Level::LAKE:
             bn::backdrop::set_color(bn::color(2, 19, 19));
             level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 1 - Lake");
             max_score = 10;
             break;
-        case 2:
+        case Level::FOREST:
             bn::backdrop::set_color(bn::color(0, 19, 0));
             level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 2 - Forest");
             level_cleared_string = bn::to_string<MAX_LEVEL_CHARS>("LEVEL 1 CLEARED!");
-
             max_score = 12;
             break;
-        case 3:
+        case Level::PLATEAU:
             bn::backdrop::set_color(bn::color(163 >> 3, 67 >> 3, 26 >> 3));
             level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 3 - Plateau");
             level_cleared_string = bn::to_string<MAX_LEVEL_CHARS>("LEVEL 2 CLEARED!");
-
             max_score = 14;
             break;
-        case 4:
+        case Level::OCEAN:
             bn::backdrop::set_color(bn::color(24 >> 3, 54 >> 3, 201 >> 3));
             level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 4 - Ocean");
             level_cleared_string = bn::to_string<MAX_LEVEL_CHARS>("LEVEL 3 CLEARED!");
-
             max_score = 9999;
             break;
         }
@@ -322,7 +322,7 @@ int main()
         {
             score = 0;
             boosters = 3;
-            level = 1;
+            level = Level::LAKE;
 
             // Instead of recreating player and treasure sprites every reset,
             // simply move them back to their initial positions

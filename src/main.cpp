@@ -16,6 +16,7 @@
 
 #include "bn_sprite_items_treasure.h"
 #include "bn_sprite_items_square.h"
+#include "bn_sprite_items_boost.h"
 #include "common_fixed_8x16_font.h"
 #include "bn_log.h"
 
@@ -29,6 +30,7 @@ static constexpr bn::fixed SPEED = 1;
 static constexpr bn::size PLAYER_SIZE = {8, 8};
 static constexpr bn::size TREASURE_SIZE = {8, 8};
 static constexpr bn::size TREASURE_HITBOX_SIZE = {8, 8};
+static constexpr bn::size BOOST_SIZE = {8, 8};
 
 // Full bounds of the screen
 static constexpr int MIN_Y = -bn::display::height() / 2;
@@ -39,6 +41,8 @@ static constexpr int PLAYER_X = 25;
 static constexpr int PLAYER_Y = -25;
 static constexpr int TREASURE_X = 60;
 static constexpr int TREASURE_Y = -45;
+static constexpr int BOOST_X = 0;
+static constexpr int BOOST_Y = 0;
 
 // Max character length for each UI element
 static constexpr int MAX_SCORE_CHARS = 11;
@@ -58,7 +62,7 @@ static constexpr int LEVEL_Y = 70;
 static constexpr int LEVEL_CLEARED_X = -64;
 static constexpr int LEVEL_CLEARED_Y = 0;
 
-// Booster resource location
+// Booster UI Element location
 static constexpr int BOOSTER_X = -107;
 static constexpr int BOOSTER_Y = -70;
 
@@ -67,11 +71,16 @@ int main()
     bn::core::init();
 
     // Creates and starts various timers
-    bn::timer timer_game;
     bn::timer timer_boost;
+    bn::timer timer_boost_wait;
     bn::timer timer_level_clear;
 
-    bn::random rng = bn::random();
+    // Pseudo-timer variables to bypass the 4 hardware timer limit on the GBA
+    int timer_game = 0;
+    int game_elapsed_seconds = 0;
+
+    bn::random rng_treasure = bn::random();
+    bn::random rng_boost = bn::random();
 
     // Will hold the sprites for the various UI elements
     bn::vector<bn::sprite_ptr, MAX_SCORE_CHARS> score_sprites = {};
@@ -86,8 +95,12 @@ int main()
     // Player and Treasure Sprites
     bn::sprite_ptr player = bn::sprite_items::square.create_sprite(PLAYER_X, PLAYER_Y);
     bn::sprite_ptr treasure = bn::sprite_items::treasure.create_sprite(TREASURE_X, TREASURE_Y);
+    bn::sprite_ptr boost = bn::sprite_items::boost.create_sprite(BOOST_X, BOOST_Y);
+
+    // Sprite attributes
     treasure.set_horizontal_scale(1);
     bn::fixed treasure_h_scale = treasure.horizontal_scale();
+    boost.set_visible(false); // Hides boost sprite until needed
 
     // Dynamic Score Variables
     int score = 0;
@@ -97,11 +110,14 @@ int main()
     bn::string<MAX_SCORE_CHARS> score_string = bn::to_string<MAX_SCORE_CHARS>(score);
     text_generator.generate(SCORE_X, SCORE_Y, "SCORE " + score_string, score_sprites);
 
-    // Non-static variables for the boost mechanic
+    // Dynamic Booster Variables
     int boosters = 3;
     int previous_boost_count = boosters;
     int player_speed = SPEED.integer();
     bool is_boosted = false;
+    int boost_weight = 1;
+    int boost_timer_min = 3;
+    int boost_timer_max = 6;
 
     bn::string<MAX_BOOSTER_CHARS> booster_string = bn::to_string<MAX_BOOSTER_CHARS>(boosters);
     text_generator.generate(BOOSTER_X, BOOSTER_Y, "BOOST " + booster_string, booster_sprites);
@@ -139,9 +155,7 @@ int main()
 
     while (true)
     {
-        // Game Timer
-        int game_ticks_elapsed = timer_game.elapsed_ticks();
-        int game_seconds_passed = game_ticks_elapsed / bn::timers::ticks_per_second();
+        // Boost Wait Timer; time between boost appearance
 
         // Treasure Scale
         treasure_h_scale = treasure.horizontal_scale();
@@ -163,7 +177,7 @@ int main()
         }
 
         // LOGS FOR TESTING PURPOSES
-        BN_LOG("Game Seconds Elapsed: ", game_seconds_passed);
+        BN_LOG("Game Seconds Elapsed: ", game_elapsed_seconds);
         BN_LOG("Player Current Speed: ", player_speed);
 
         // Move player with d-pad
@@ -201,7 +215,7 @@ int main()
             player.set_y(player.y() + player_speed);
         }
 
-        // The bounding boxes of the player and treasure, snapped to integer pixels
+        // The bounding boxes of sprites, snapped to integer pixels
         bn::rect player_rect = bn::rect(player.x().round_integer(),
                                         player.y().round_integer(),
                                         PLAYER_SIZE.width(),
@@ -210,16 +224,29 @@ int main()
                                           treasure.y().round_integer(),
                                           TREASURE_HITBOX_SIZE.width(),
                                           TREASURE_HITBOX_SIZE.height());
+        bn::rect boost_rect = bn::rect(boost.x().round_integer(),
+                                       boost.y().round_integer(),
+                                       BOOST_SIZE.width(),
+                                       BOOST_SIZE.height());
 
         // If the bounding boxes overlap, set the treasure to a new location an increase score
         if (player_rect.intersects(treasure_rect))
         {
             // Jump to any random point in the screen
-            int new_x = rng.get_int(MIN_X, MAX_X);
-            int new_y = rng.get_int(MIN_Y, MAX_Y);
+            int new_x = rng_treasure.get_int(MIN_X, MAX_X);
+            int new_y = rng_treasure.get_int(MIN_Y, MAX_Y);
             treasure.set_position(new_x, new_y);
             score++;
         }
+
+        if (player_rect.intersects(boost_rect) && boost.visible() == true) {
+            int new_x = rng_boost.get_int(MIN_X + 10, MAX_X - 10);
+            int new_y = rng_boost.get_int(MIN_Y + 10, MAX_Y - 10);
+            boost.set_position(new_x, new_y);
+            boosters += 2;
+        }
+
+
 
         // Animates treasure sprite
         if (is_treasure_growing)
@@ -352,7 +379,8 @@ int main()
         }
 
         // Update RNG seed every frame so we don't get the same sequence of positions every time
-        rng.update();
+        rng_treasure.update();
+        rng_boost.update();
 
         // Updates previous couts of UI elements to current counts
         previous_score = score;
@@ -361,6 +389,8 @@ int main()
         previous_alpha = bn::blending::transparency_alpha();
 
         treasure.set_horizontal_scale(treasure_h_scale);
+
+        update_timer(timer_game, game_elapsed_seconds);
 
         bn::core::update();
     }

@@ -6,3 +6,14 @@ void level_plus(Level &level) {
     // then casts it back into an enum
     level = static_cast<Level>(static_cast<int>(level) + 1);
 }
+
+void update_timer(int &timer, int &seconds) {
+    // Updates tick count
+    timer++;
+
+    // Increases seconds elapsed by taken advantage of the 60 cycles per second the GBA runs on
+    if (timer >= 60) {
+        seconds++;
+        timer = 0;
+    }
+}

@@ -75,7 +75,7 @@ Nothing at the moment!
       This would display the change in level in a simple way.
 - [x] Add a fade in and fade out to the level clear sprites.
 - [x] Add simple animation to treasure sprite.
-- [ ] Change Player and maybe treasure sprite to something more interesting. (Partialy Implemented)
+- [ ] Change Player and maybe treasure sprite to something more interesting. (Partially Implemented)
 
 ### Campbell Plans
 - [ ] Add sprite background
@@ -83,6 +83,6 @@ Nothing at the moment!
 - [ ] Replace level cleared with level indicator instead to reduce screen clutter and sprite count
 
 ### Esteban Plans
-- [ ] Reimplement game timer that counts downward, ending the game at time zero.
+- [ ] Reimplement game timer that counts downward, ending the game at time zero. (Partially Implemented)
 - [ ] Add a "game over" screen
-- [ ] Add boost sprite as a way to replenish boost count
+- [x] Add boost sprite as a way to replenish boost count

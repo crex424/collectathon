@@ -11,7 +11,7 @@ void update_timer(int &timer, int &seconds) {
     // Increases seconds elapsed by taken advantage of the 60 cycles per second the GBA runs on
     if (timer >= 60) {
         seconds++;
-        timer = -1;
+        timer = 0;
     }
     // Updates tick count
     timer++;

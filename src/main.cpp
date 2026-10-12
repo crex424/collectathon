@@ -67,8 +67,8 @@ static constexpr int BOOSTER_X = -107;
 static constexpr int BOOSTER_Y = -70;
 
 // Booster Spawn Min / Max Wait Time
-static constexpr int BOOST_WAIT_MIN = 3;
-static constexpr int BOOST_WAIT_MAX = 7;
+static constexpr int BOOST_WAIT_MIN = 10;
+static constexpr int BOOST_WAIT_MAX = 15;
 
 int main()
 {
@@ -170,8 +170,7 @@ int main()
         if (bn::keypad::a_pressed() && boosters > 0 && !is_boosted)
         {
             boosters--;
-            timer_boost_active = 0;
-            boost_active_elapsed_seconds = 0;
+            reset_timer(timer_boost_active, boost_active_elapsed_seconds);
             is_boosted = true;
             player_speed = SPEED.integer() + boost_weight;
         }

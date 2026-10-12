@@ -8,12 +8,16 @@ void level_plus(Level &level) {
 }
 
 void update_timer(int &timer, int &seconds) {
-    // Updates tick count
-    timer++;
-
     // Increases seconds elapsed by taken advantage of the 60 cycles per second the GBA runs on
     if (timer >= 60) {
         seconds++;
-        timer = 0;
+        timer = -1;
     }
+    // Updates tick count
+    timer++;
+}
+
+void reset_timer(int &timer, int &seconds) {
+    timer = 0;
+    seconds = 0;
 }

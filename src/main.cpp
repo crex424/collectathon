@@ -66,18 +66,27 @@ static constexpr int LEVEL_CLEARED_Y = 0;
 static constexpr int BOOSTER_X = -107;
 static constexpr int BOOSTER_Y = -70;
 
+// Booster Spawn Min / Max Wait Time
+static constexpr int BOOST_WAIT_MIN = 3;
+static constexpr int BOOST_WAIT_MAX = 7;
+
 int main()
 {
     bn::core::init();
 
     // Creates and starts various timers
-    bn::timer timer_boost;
-    bn::timer timer_boost_wait;
     bn::timer timer_level_clear;
 
     // Pseudo-timer variables to bypass the 4 hardware timer limit on the GBA
+    // Game Timer
     int timer_game = 0;
     int game_elapsed_seconds = 0;
+    // Active Boost Timer
+    int timer_boost_active = 0;
+    int boost_active_elapsed_seconds = 0;
+    // Boost Spawn Timer
+    int timer_boost_spawn = 0;
+    int boost_spawn_elapsed_seconds = 0;
 
     bn::random rng_treasure = bn::random();
     bn::random rng_boost = bn::random();
@@ -115,9 +124,10 @@ int main()
     int previous_boost_count = boosters;
     int player_speed = SPEED.integer();
     bool is_boosted = false;
-    int boost_weight = 1;
-    int boost_timer_min = 3;
-    int boost_timer_max = 6;
+
+    int boost_weight = 1; // Determines how strong the boost is
+    int boost_spawn_wait_time = rng_boost.get_int(BOOST_WAIT_MIN, BOOST_WAIT_MAX);
+    bool is_booster_spawned = false;
 
     bn::string<MAX_BOOSTER_CHARS> booster_string = bn::to_string<MAX_BOOSTER_CHARS>(boosters);
     text_generator.generate(BOOSTER_X, BOOSTER_Y, "BOOST " + booster_string, booster_sprites);
@@ -151,12 +161,8 @@ int main()
     // Initializes backdrop to a white color as game loads
     bn::backdrop::set_color(bn::color(0, 0, 0));
 
-    // Initializes level and level clear strings
-
     while (true)
     {
-        // Boost Wait Timer; time between boost appearance
-
         // Treasure Scale
         treasure_h_scale = treasure.horizontal_scale();
 
@@ -164,20 +170,43 @@ int main()
         if (bn::keypad::a_pressed() && boosters > 0 && !is_boosted)
         {
             boosters--;
-            timer_boost.restart();
+            timer_boost_active = 0;
+            boost_active_elapsed_seconds = 0;
             is_boosted = true;
-            player_speed = SPEED.integer() + 1;
+            player_speed = SPEED.integer() + boost_weight;
         }
 
         // End Boost
-        if ((timer_boost.elapsed_ticks() / bn::timers::ticks_per_second()) >= 3 && is_boosted)
+        if (boost_active_elapsed_seconds >= 3 && is_boosted)
         {
             player_speed = SPEED.integer();
             is_boosted = false;
         }
 
+        // Checks to see if boost should spawn or not
+        if (boost_spawn_elapsed_seconds >= boost_spawn_wait_time && !is_boosted && !is_booster_spawned)
+        {
+            boost.set_visible(true);
+            is_booster_spawned = true;
+            reset_timer(timer_boost_spawn, boost_spawn_elapsed_seconds);
+        }
+
+        // Removes booster if player didn't collect it in time
+        if (boost_spawn_elapsed_seconds >= 3 && is_booster_spawned)
+        {
+            boost.set_visible(false);
+            is_booster_spawned = false;
+            int new_x = rng_boost.get_int(MIN_X + 10, MAX_X - 10);
+            int new_y = rng_boost.get_int(MIN_Y + 10, MAX_Y - 10);
+            boost.set_position(new_x, new_y);
+            reset_timer(timer_boost_spawn, boost_spawn_elapsed_seconds);
+            rng_boost.update();
+            boost_spawn_wait_time = rng_boost.get_int(BOOST_WAIT_MIN, BOOST_WAIT_MAX);
+        }
+
         // LOGS FOR TESTING PURPOSES
         BN_LOG("Game Seconds Elapsed: ", game_elapsed_seconds);
+        BN_LOG("Booster Wait Time in Seconds Elapsed: ", boost_spawn_elapsed_seconds);
         BN_LOG("Player Current Speed: ", player_speed);
 
         // Move player with d-pad
@@ -229,7 +258,7 @@ int main()
                                        BOOST_SIZE.width(),
                                        BOOST_SIZE.height());
 
-        // If the bounding boxes overlap, set the treasure to a new location an increase score
+        // If the bounding boxes overlap, set the treasure or boost to a new location an increase score
         if (player_rect.intersects(treasure_rect))
         {
             // Jump to any random point in the screen
@@ -238,15 +267,18 @@ int main()
             treasure.set_position(new_x, new_y);
             score++;
         }
-
-        if (player_rect.intersects(boost_rect) && boost.visible() == true) {
+        if (player_rect.intersects(boost_rect) && is_booster_spawned)
+        {
+            boost.set_visible(false);
+            is_booster_spawned = false;
             int new_x = rng_boost.get_int(MIN_X + 10, MAX_X - 10);
             int new_y = rng_boost.get_int(MIN_Y + 10, MAX_Y - 10);
             boost.set_position(new_x, new_y);
+            reset_timer(timer_boost_spawn, boost_spawn_elapsed_seconds);
+            rng_boost.update();
+            boost_spawn_wait_time = rng_boost.get_int(BOOST_WAIT_MIN, BOOST_WAIT_MAX);
             boosters += 2;
         }
-
-
 
         // Animates treasure sprite
         if (is_treasure_growing)
@@ -283,24 +315,28 @@ int main()
             bn::backdrop::set_color(bn::color(2, 19, 19));
             level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 1 - Lake");
             max_score = 10;
+            boost_weight = 1;
             break;
         case Level::FOREST:
             bn::backdrop::set_color(bn::color(0, 19, 0));
             level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 2 - Forest");
             level_cleared_string = bn::to_string<MAX_LEVEL_CHARS>("LEVEL 1 CLEARED!");
             max_score = 12;
+            boost_weight = 2;
             break;
         case Level::PLATEAU:
             bn::backdrop::set_color(bn::color(163 >> 3, 67 >> 3, 26 >> 3));
             level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 3 - Plateau");
             level_cleared_string = bn::to_string<MAX_LEVEL_CHARS>("LEVEL 2 CLEARED!");
             max_score = 14;
+            boost_weight = 3;
             break;
         case Level::OCEAN:
             bn::backdrop::set_color(bn::color(24 >> 3, 54 >> 3, 201 >> 3));
             level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 4 - Ocean");
             level_cleared_string = bn::to_string<MAX_LEVEL_CHARS>("LEVEL 3 CLEARED!");
             max_score = 9999;
+            boost_weight = 4;
             break;
         }
 
@@ -391,6 +427,8 @@ int main()
         treasure.set_horizontal_scale(treasure_h_scale);
 
         update_timer(timer_game, game_elapsed_seconds);
+        update_timer(timer_boost_active, boost_active_elapsed_seconds);
+        update_timer(timer_boost_spawn, boost_spawn_elapsed_seconds);
 
         bn::core::update();
     }

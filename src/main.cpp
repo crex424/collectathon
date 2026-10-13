@@ -142,7 +142,7 @@ int main()
 
     text_generator.generate(SCORE_X, SCORE_Y, "SCORE " + score_string, score_sprites);
     text_generator.generate(BOOSTER_X, BOOSTER_Y, "BOOST " + booster_string, booster_sprites);
-    text_generator.generate(GAME_X, GAME_Y, "TIMER " + game_string, game_sprites);
+    text_generator.generate(GAME_X, GAME_Y, "TIME " + game_string, game_sprites);
 
     // Stage Tracker
     Level level = Level::LAKE;
@@ -177,12 +177,14 @@ int main()
     while (true)
     {
         // Checks to see if game timer sprites need to be regenerated
-        if (previous_game_time_left != game_time_left && !is_game_over) {
+        if ((previous_game_time_left != game_time_left) && !is_game_over)
+        {
+            game_string = bn::to_string<MAX_GAME_CHARS>(game_time_left);
             game_sprites.clear();
             text_generator.generate(GAME_X, GAME_Y, "TIMER " + game_string, game_sprites);
             previous_game_time_left = game_time_left;
         }
-        
+
         // Treasure Scale
         treasure_h_scale = treasure.horizontal_scale();
 
@@ -224,6 +226,7 @@ int main()
         }
 
         // LOGS FOR TESTING PURPOSES
+        BN_LOG("Time Remaining: ", game_time_left);
         BN_LOG("Booster Wait Time in Seconds Elapsed: ", boost_spawn_elapsed_seconds);
         BN_LOG("Player Current Speed: ", player_speed);
 
@@ -325,7 +328,8 @@ int main()
             timer_level_clear.restart();
         }
 
-        if (game_time_left <=0 && !is_game_over) {
+        if (game_time_left <= 0 && !is_game_over)
+        {
             level = Level::GAME_OVER;
         }
 
@@ -358,11 +362,18 @@ int main()
             boost_weight = 4;
             break;
         case Level::GAME_OVER:
-            game_over_string = bn::to_string<MAX_LEVEL_CHARS>("GAME OVER!");
             level_sprites.clear();
-            text_generator.generate(LEVEL_X, LEVEL_Y, game_over_string, game_over_sprites);
-            for (int i = 0; i < game_over_sprites.size(); i++)
-                game_over_sprites[i].set_visible(true);
+            score_sprites.clear();
+            game_sprites.clear();
+            booster_sprites.clear();
+            level_string = bn::to_string<MAX_LEVEL_CHARS>("GAME OVER!");
+            text_generator.generate(LEVEL_X, LEVEL_Y, level_string, level_sprites);
+            for (int i = 0; i < level_sprites.size(); i++)
+            {
+                level_sprites[i].set_blending_enabled(true);
+                level_sprites[i].set_visible(true);
+            }
+            bn::blending::set_transparency_alpha(bn::fixed(1));
             is_game_over = true;
             break;
         }
@@ -418,6 +429,12 @@ int main()
             // simply move them back to their initial positions
             player.set_position(PLAYER_X, PLAYER_Y);
             treasure.set_position(TREASURE_X, TREASURE_Y);
+        }
+
+        // Debug Cheat Code
+        if (bn::keypad::select_pressed())
+        {
+            level = Level::GAME_OVER;
         }
 
         // Update Score Display

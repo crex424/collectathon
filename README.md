@@ -4,5 +4,5 @@ In this game you will travel to many locations, 5 of them, and gather gold coins
 https://crex424.github.io/collectathon/
 
 ![Alt Text](gameplay.gif)
-# Declaimer
+# Disclaimer
 This is a in progress game used to help learn how to develop gba games using Butano. There is incomplete sections.

@@ -145,6 +145,8 @@ int main()
     text_generator.generate(LEVEL_X, LEVEL_Y, level_string, level_sprites);
     text_generator.generate(LEVEL_CLEARED_X, LEVEL_CLEARED_Y, level_cleared_string, level_cleared_sprites);
 
+    bool is_game_over = false;
+
     // Iterates through all vector sprite ptr elements to toggle blending on and set invisible
     for (int i = 0; i < level_cleared_sprites.size(); i++)
     {
@@ -209,7 +211,7 @@ int main()
         BN_LOG("Player Current Speed: ", player_speed);
 
         // Move player with d-pad
-        if (bn::keypad::left_held())
+        if (bn::keypad::left_held() && !is_game_over)
         {
             if (player.x() < MIN_X)
             {
@@ -217,7 +219,7 @@ int main()
             }
             player.set_x(player.x() - player_speed);
         }
-        if (bn::keypad::right_held())
+        if (bn::keypad::right_held() && !is_game_over)
         {
             if (player.x() > MAX_X)
             {
@@ -225,7 +227,7 @@ int main()
             }
             player.set_x(player.x() + player_speed);
         }
-        if (bn::keypad::up_held())
+        if (bn::keypad::up_held() && !is_game_over)
         {
             if (player.y() < MIN_Y)
             {
@@ -234,7 +236,7 @@ int main()
 
             player.set_y(player.y() - player_speed);
         }
-        if (bn::keypad::down_held())
+        if (bn::keypad::down_held() && !is_game_over)
         {
             if (player.y() > MAX_Y)
             {
@@ -298,7 +300,7 @@ int main()
         }
 
         // Increases level counter when score reaches max
-        if (score >= max_score)
+        if (score >= max_score && !is_game_over)
         {
             score = 0;
             level_plus(level);
@@ -334,12 +336,21 @@ int main()
             bn::backdrop::set_color(bn::color(24 >> 3, 54 >> 3, 201 >> 3));
             level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 4 - Ocean");
             level_cleared_string = bn::to_string<MAX_LEVEL_CHARS>("LEVEL 3 CLEARED!");
-            max_score = 9999;
+            max_score = 16;
             boost_weight = 4;
+            break;
+        case Level::GAME_OVER:
+            level_cleared_string = bn::to_string<MAX_LEVEL_CHARS>("GAME OVER!");
+            level_sprites.clear();
+            level_cleared_sprites.clear();
+            text_generator.generate(LEVEL_CLEARED_X, LEVEL_CLEARED_Y, level_cleared_string, level_cleared_sprites);
+            for (int i = 0; i < level_cleared_sprites.size(); i++)
+                level_cleared_sprites[i].set_visible(true);
+            is_game_over = true;
             break;
         }
 
-        if (level != previous_level)
+        if (level != previous_level && !is_game_over)
         {
             level_sprites.clear();
             text_generator.generate(LEVEL_X, LEVEL_Y, level_string, level_sprites);
@@ -358,11 +369,11 @@ int main()
         }
 
         // When the level is cleared, fade in the level cleared sprites, and vice versa after three seconds have passed
-        if (is_cleared)
+        if (is_cleared && !is_game_over)
         {
             bn::blending::set_transparency_alpha(bn::min(bn::blending::transparency_alpha() + 0.0167, bn::fixed(1)));
         }
-        else
+        else if (!is_game_over)
         {
             bn::blending::set_transparency_alpha(bn::max(bn::blending::transparency_alpha() - 0.0167, bn::fixed(0)));
         }
@@ -385,6 +396,9 @@ int main()
             score = 0;
             boosters = 3;
             level = Level::LAKE;
+            is_game_over = false;
+            for (int i = 0; i < level_cleared_sprites.size(); i++)
+                level_cleared_sprites[i].set_visible(false);
 
             // Instead of recreating player and treasure sprites every reset,
             // simply move them back to their initial positions
@@ -394,7 +408,7 @@ int main()
 
         // Update Score Display
         score_string = bn::to_string<MAX_SCORE_CHARS>(score);
-        if (score != previous_score)
+        if (score != previous_score && !is_game_over)
         {
             // Avoids wasting resources by only regenerating score text when score changes
             score_sprites.clear();
@@ -405,7 +419,7 @@ int main()
 
         // Update booster resource display
         booster_string = bn::to_string<MAX_BOOSTER_CHARS>(boosters);
-        if (boosters != previous_boost_count)
+        if (boosters != previous_boost_count && !is_game_over)
         {
             booster_sprites.clear();
             text_generator.generate(BOOSTER_X, BOOSTER_Y,

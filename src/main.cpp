@@ -161,6 +161,7 @@ int main()
 
     // Initializes backdrop to a white color as game loads
     bn::backdrop::set_color(bn::color(0, 0, 0));
+    bn::regular_bg_ptr current_bg = bn::regular_bg_items::lake_bg.create_bg();
     while (true)
     {
         // Treasure Scale
@@ -311,13 +312,13 @@ int main()
         {
         default:
         case Level::LAKE:
-            bn::regular_bg_ptr bg = bn::regular_bg_items::lake_bg.create_bg();
+            current_bg = bn::regular_bg_items::lake_bg.create_bg();
             level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 1 - Lake");
             max_score = 10;
             boost_weight = 1;
             break;
         case Level::FOREST:
-            bn::regular_bg_ptr bg = bn::regular_bg_items::forest_bg.create_bg();
+            current_bg = bn::regular_bg_items::forest_bg.create_bg();
             level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 2 - Forest");
             max_score = 12;
             boost_weight = 2;

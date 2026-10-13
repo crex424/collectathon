@@ -51,6 +51,7 @@ static constexpr int BOOST_Y = 0;
 static constexpr int MAX_SCORE_CHARS = 11;
 static constexpr int MAX_BOOSTER_CHARS = 8;
 static constexpr int MAX_LEVEL_CHARS = 23;
+static constexpr int MAX_GAME_OVER_CHARS = 23;
 static constexpr int MAX_TEST_CHARS = 3;
 
 // Score location
@@ -95,6 +96,7 @@ int main()
     bn::vector<bn::sprite_ptr, MAX_BOOSTER_CHARS> booster_sprites = {};
     bn::vector<bn::sprite_ptr, MAX_LEVEL_CHARS> level_sprites = {};
     bn::vector<bn::sprite_ptr, MAX_TEST_CHARS> test_sprites = {};
+    bn::vector<bn::sprite_ptr, MAX_GAME_OVER_CHARS> game_over_sprites = {};
 
     // Text Generator for UI Elements
     bn::sprite_text_generator text_generator(common::fixed_8x16_sprite_font);
@@ -117,6 +119,7 @@ int main()
     int max_score = 10;
 
     bn::string<MAX_SCORE_CHARS> score_string = bn::to_string<MAX_SCORE_CHARS>(score);
+    bn::string<MAX_GAME_OVER_CHARS> game_over_string = bn::to_string<MAX_GAME_OVER_CHARS>("GAME OVER");
     text_generator.generate(SCORE_X, SCORE_Y, "SCORE " + score_string, score_sprites);
 
     // Dynamic Booster Variables
@@ -161,6 +164,7 @@ int main()
 
     // Initializes backdrop to a white color as game loads
     bn::backdrop::set_color(bn::color(0, 0, 0));
+    bn::regular_bg_ptr current_bg = bn::regular_bg_items::lake_bg.create_bg();
     while (true)
     {
         // Treasure Scale
@@ -311,13 +315,21 @@ int main()
         {
         default:
         case Level::LAKE:
+<<<<<<< HEAD
             bg = bn::regular_bg_items::lake_bg.create_bg();
+=======
+            current_bg = bn::regular_bg_items::lake_bg.create_bg();
+>>>>>>> 5e7c6c5b7902ac96f5d31fa23fc2be925d8a98e3
             level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 1 - Lake");
             max_score = 10;
             boost_weight = 1;
             break;
         case Level::FOREST:
+<<<<<<< HEAD
             bg = bn::regular_bg_items::forest_bg.create_bg();
+=======
+            current_bg = bn::regular_bg_items::forest_bg.create_bg();
+>>>>>>> 5e7c6c5b7902ac96f5d31fa23fc2be925d8a98e3
             level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 2 - Forest");
             max_score = 12;
             boost_weight = 2;
@@ -335,12 +347,11 @@ int main()
             boost_weight = 4;
             break;
         case Level::GAME_OVER:
-            level_cleared_string = bn::to_string<MAX_LEVEL_CHARS>("GAME OVER!");
+            game_over_string = bn::to_string<MAX_LEVEL_CHARS>("GAME OVER!");
             level_sprites.clear();
-            level_cleared_sprites.clear();
-            text_generator.generate(LEVEL_CLEARED_X, LEVEL_CLEARED_Y, level_cleared_string, level_cleared_sprites);
-            for (int i = 0; i < level_cleared_sprites.size(); i++)
-                level_cleared_sprites[i].set_visible(true);
+            text_generator.generate(LEVEL_X, LEVEL_Y, game_over_string, game_over_sprites);
+            for (int i = 0; i < game_over_sprites.size(); i++)
+                game_over_sprites[i].set_visible(true);
             is_game_over = true;
             break;
         }
@@ -389,8 +400,8 @@ int main()
             boosters = 3;
             level = Level::LAKE;
             is_game_over = false;
-            for (int i = 0; i < level_cleared_sprites.size(); i++)
-                level_cleared_sprites[i].set_visible(false);
+            for (int i = 0; i < level_sprites.size(); i++)
+                level_sprites[i].set_visible(false);
 
             // Instead of recreating player and treasure sprites every reset,
             // simply move them back to their initial positions

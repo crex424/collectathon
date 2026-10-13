@@ -13,7 +13,10 @@
 #include <bn_timer.h>
 #include <bn_blending.h>
 #include <bn_blending_actions.h>
+#include <bn_regular_bg_ptr.h>
 
+#include "bn_regular_bg_items_lake_bg.h"
+#include "bn_regular_bg_items_forest_bg.h"
 #include "bn_sprite_items_treasure.h"
 #include "bn_sprite_items_square.h"
 #include "bn_sprite_items_boost.h"
@@ -56,11 +59,7 @@ static constexpr int SCORE_Y = -70;
 
 // Level Location
 static constexpr int LEVEL_X = -66;
-static constexpr int LEVEL_Y = 70;
-
-// Level Cleared Location
-static constexpr int LEVEL_CLEARED_X = -64;
-static constexpr int LEVEL_CLEARED_Y = 0;
+static constexpr int LEVEL_Y = 0;
 
 // Booster UI Element location
 static constexpr int BOOSTER_X = -107;
@@ -95,7 +94,6 @@ int main()
     bn::vector<bn::sprite_ptr, MAX_SCORE_CHARS> score_sprites = {};
     bn::vector<bn::sprite_ptr, MAX_BOOSTER_CHARS> booster_sprites = {};
     bn::vector<bn::sprite_ptr, MAX_LEVEL_CHARS> level_sprites = {};
-    bn::vector<bn::sprite_ptr, MAX_LEVEL_CHARS> level_cleared_sprites = {};
     bn::vector<bn::sprite_ptr, MAX_TEST_CHARS> test_sprites = {};
 
     // Text Generator for UI Elements
@@ -140,27 +138,24 @@ int main()
     bn::fixed previous_alpha = bn::blending::transparency_alpha();
 
     bn::string<MAX_LEVEL_CHARS> level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 1 - Lake");
-    bn::string<MAX_LEVEL_CHARS> level_cleared_string = bn::to_string<MAX_LEVEL_CHARS>("LEVEL 1 CLEARED");
 
     text_generator.generate(LEVEL_X, LEVEL_Y, level_string, level_sprites);
-    text_generator.generate(LEVEL_CLEARED_X, LEVEL_CLEARED_Y, level_cleared_string, level_cleared_sprites);
 
     // Iterates through all vector sprite ptr elements to toggle blending on and set invisible
-    for (int i = 0; i < level_cleared_sprites.size(); i++)
+    for (int i = 0; i < level_sprites.size(); i++)
     {
         // Allows Sprite to be transparent or not
-        level_cleared_sprites[i].set_blending_enabled(true);
+        level_sprites[i].set_blending_enabled(true);
 
         // Sets all vector sprite_ptr elements to be invisible
-        level_cleared_sprites[i].set_visible(false);
+        level_sprites[i].set_visible(false);
     }
 
     // Treasure scale for animation
     bool is_treasure_growing = false;
-
+    
     // Initializes backdrop to a white color as game loads
     bn::backdrop::set_color(bn::color(0, 0, 0));
-
     while (true)
     {
         // Treasure Scale
@@ -311,29 +306,26 @@ int main()
         {
         default:
         case Level::LAKE:
-            bn::backdrop::set_color(bn::color(2, 19, 19));
+            bn::regular_bg_ptr bg = bn::regular_bg_items::lake_bg.create_bg();
             level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 1 - Lake");
             max_score = 10;
             boost_weight = 1;
             break;
         case Level::FOREST:
-            bn::backdrop::set_color(bn::color(0, 19, 0));
+            bn::regular_bg_ptr bg = bn::regular_bg_items::forest_bg.create_bg();
             level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 2 - Forest");
-            level_cleared_string = bn::to_string<MAX_LEVEL_CHARS>("LEVEL 1 CLEARED!");
             max_score = 12;
             boost_weight = 2;
             break;
         case Level::PLATEAU:
             bn::backdrop::set_color(bn::color(163 >> 3, 67 >> 3, 26 >> 3));
             level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 3 - Plateau");
-            level_cleared_string = bn::to_string<MAX_LEVEL_CHARS>("LEVEL 2 CLEARED!");
             max_score = 14;
             boost_weight = 3;
             break;
         case Level::OCEAN:
             bn::backdrop::set_color(bn::color(24 >> 3, 54 >> 3, 201 >> 3));
             level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 4 - Ocean");
-            level_cleared_string = bn::to_string<MAX_LEVEL_CHARS>("LEVEL 3 CLEARED!");
             max_score = 9999;
             boost_weight = 4;
             break;
@@ -344,16 +336,13 @@ int main()
             level_sprites.clear();
             text_generator.generate(LEVEL_X, LEVEL_Y, level_string, level_sprites);
 
-            level_cleared_sprites.clear();
-            text_generator.generate(LEVEL_CLEARED_X, LEVEL_CLEARED_Y, level_cleared_string, level_cleared_sprites);
-
-            for (int i = 0; i < level_cleared_sprites.size(); i++)
+            for (int i = 0; i < level_sprites.size(); i++)
             {
                 // Allows Sprite to be transparent or not
-                level_cleared_sprites[i].set_blending_enabled(true);
+                level_sprites[i].set_blending_enabled(true);
 
                 // Display sprites now that we need to
-                level_cleared_sprites[i].set_visible(true);
+                level_sprites[i].set_visible(true);
             }
         }
 
@@ -372,10 +361,10 @@ int main()
         }
         if (bn::blending::transparency_alpha() == 0 && bn::blending::transparency_alpha() != previous_alpha)
         {
-            for (int i = 0; i < level_cleared_sprites.size(); i++)
+            for (int i = 0; i < level_sprites.size(); i++)
             {
                 // Display sprites now that we need to
-                level_cleared_sprites[i].set_visible(false);
+                level_sprites[i].set_visible(false);
             }
         }
 

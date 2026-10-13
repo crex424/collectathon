@@ -101,7 +101,8 @@ int main()
     // Text Generator for UI Elements
     bn::sprite_text_generator text_generator(common::fixed_8x16_sprite_font);
 
-    bn::regular_bg_ptr bg = bn::regular_bg_items::lake_bg.create_bg();
+    // Creates and sets backgroud sprite
+    bn::regular_bg_ptr current_bg = bn::regular_bg_items::lake_bg.create_bg();
 
     // Player and Treasure Sprites
     bn::sprite_ptr player = bn::sprite_items::square.create_sprite(PLAYER_X, PLAYER_Y);
@@ -164,7 +165,7 @@ int main()
 
     // Initializes backdrop to a white color as game loads
     bn::backdrop::set_color(bn::color(0, 0, 0));
-    bn::regular_bg_ptr current_bg = bn::regular_bg_items::lake_bg.create_bg();
+
     while (true)
     {
         // Treasure Scale
@@ -315,21 +316,13 @@ int main()
         {
         default:
         case Level::LAKE:
-<<<<<<< HEAD
-            bg = bn::regular_bg_items::lake_bg.create_bg();
-=======
             current_bg = bn::regular_bg_items::lake_bg.create_bg();
->>>>>>> 5e7c6c5b7902ac96f5d31fa23fc2be925d8a98e3
             level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 1 - Lake");
             max_score = 10;
             boost_weight = 1;
             break;
         case Level::FOREST:
-<<<<<<< HEAD
-            bg = bn::regular_bg_items::forest_bg.create_bg();
-=======
             current_bg = bn::regular_bg_items::forest_bg.create_bg();
->>>>>>> 5e7c6c5b7902ac96f5d31fa23fc2be925d8a98e3
             level_string = bn::to_string<MAX_LEVEL_CHARS>("Level 2 - Forest");
             max_score = 12;
             boost_weight = 2;

@@ -420,10 +420,23 @@ int main()
         {
             score = 0;
             boosters = 3;
+            game_time_left = 120;
             level = Level::LAKE;
             is_game_over = false;
             for (int i = 0; i < level_sprites.size(); i++)
                 level_sprites[i].set_visible(false);
+
+            score_string = bn::to_string<MAX_SCORE_CHARS>(score);
+            score_sprites.clear();
+            text_generator.generate(SCORE_X, SCORE_Y,
+                                    "SCORE " + score_string,
+                                    score_sprites);
+
+            booster_string = bn::to_string<MAX_BOOSTER_CHARS>(boosters);
+            booster_sprites.clear();
+            text_generator.generate(BOOSTER_X, BOOSTER_Y,
+                                    "BOOST " + booster_string,
+                                    booster_sprites);
 
             // Instead of recreating player and treasure sprites every reset,
             // simply move them back to their initial positions

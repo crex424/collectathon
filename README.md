@@ -2,3 +2,5 @@
 A template to explore GBA games and collaboration with git/GitHub. Please see the instructions in [instructions.md](./instructions.md).
 Let it ride!
 Omg, I'm different from before now!
+
+![Alt Text](gameplay.gif)

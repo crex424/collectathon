@@ -52,19 +52,23 @@ static constexpr int MAX_SCORE_CHARS = 11;
 static constexpr int MAX_BOOSTER_CHARS = 8;
 static constexpr int MAX_LEVEL_CHARS = 23;
 static constexpr int MAX_GAME_OVER_CHARS = 23;
-static constexpr int MAX_TEST_CHARS = 3;
+static constexpr int MAX_GAME_CHARS = 9;
 
 // Score location
 static constexpr int SCORE_X = 43;
 static constexpr int SCORE_Y = -70;
 
-// Level Location
+// Level Legend Location
 static constexpr int LEVEL_X = -66;
 static constexpr int LEVEL_Y = 0;
 
+// Game Timer Location
+static constexpr int GAME_X = -107;
+static constexpr int GAME_Y = -70;
+
 // Booster UI Element location
-static constexpr int BOOSTER_X = -107;
-static constexpr int BOOSTER_Y = -70;
+static constexpr int BOOSTER_X = 43;
+static constexpr int BOOSTER_Y = 70;
 
 // Booster Spawn Min / Max Wait Time
 static constexpr int BOOST_WAIT_MIN = 10;
@@ -80,7 +84,8 @@ int main()
     // Pseudo-timer variables to bypass the 4 hardware timer limit on the GBA
     // Game Timer
     int timer_game = 0;
-    int game_elapsed_seconds = 0;
+    int game_time_left = 120;
+    int previous_game_time_left = 120;
     // Active Boost Timer
     int timer_boost_active = 0;
     int boost_active_elapsed_seconds = 0;
@@ -95,7 +100,7 @@ int main()
     bn::vector<bn::sprite_ptr, MAX_SCORE_CHARS> score_sprites = {};
     bn::vector<bn::sprite_ptr, MAX_BOOSTER_CHARS> booster_sprites = {};
     bn::vector<bn::sprite_ptr, MAX_LEVEL_CHARS> level_sprites = {};
-    bn::vector<bn::sprite_ptr, MAX_TEST_CHARS> test_sprites = {};
+    bn::vector<bn::sprite_ptr, MAX_GAME_CHARS> game_sprites = {};
     bn::vector<bn::sprite_ptr, MAX_GAME_OVER_CHARS> game_over_sprites = {};
 
     // Text Generator for UI Elements
@@ -119,10 +124,6 @@ int main()
     int previous_score = score;
     int max_score = 10;
 
-    bn::string<MAX_SCORE_CHARS> score_string = bn::to_string<MAX_SCORE_CHARS>(score);
-    bn::string<MAX_GAME_OVER_CHARS> game_over_string = bn::to_string<MAX_GAME_OVER_CHARS>("GAME OVER");
-    text_generator.generate(SCORE_X, SCORE_Y, "SCORE " + score_string, score_sprites);
-
     // Dynamic Booster Variables
     int boosters = 3;
     int previous_boost_count = boosters;
@@ -133,8 +134,15 @@ int main()
     int boost_spawn_wait_time = rng_boost.get_int(BOOST_WAIT_MIN, BOOST_WAIT_MAX);
     bool is_booster_spawned = false;
 
+    // UI Element Sprites
+    bn::string<MAX_SCORE_CHARS> score_string = bn::to_string<MAX_SCORE_CHARS>(score);
+    bn::string<MAX_GAME_OVER_CHARS> game_over_string = bn::to_string<MAX_GAME_OVER_CHARS>("GAME OVER");
     bn::string<MAX_BOOSTER_CHARS> booster_string = bn::to_string<MAX_BOOSTER_CHARS>(boosters);
+    bn::string<MAX_GAME_CHARS> game_string = bn::to_string<MAX_GAME_CHARS>(game_time_left);
+
+    text_generator.generate(SCORE_X, SCORE_Y, "SCORE " + score_string, score_sprites);
     text_generator.generate(BOOSTER_X, BOOSTER_Y, "BOOST " + booster_string, booster_sprites);
+    text_generator.generate(GAME_X, GAME_Y, "TIMER " + game_string, game_sprites);
 
     // Stage Tracker
     Level level = Level::LAKE;
@@ -168,6 +176,13 @@ int main()
 
     while (true)
     {
+        // Checks to see if game timer sprites need to be regenerated
+        if (previous_game_time_left != game_time_left && !is_game_over) {
+            game_sprites.clear();
+            text_generator.generate(GAME_X, GAME_Y, "TIMER " + game_string, game_sprites);
+            previous_game_time_left = game_time_left;
+        }
+        
         // Treasure Scale
         treasure_h_scale = treasure.horizontal_scale();
 
@@ -209,7 +224,6 @@ int main()
         }
 
         // LOGS FOR TESTING PURPOSES
-        BN_LOG("Game Seconds Elapsed: ", game_elapsed_seconds);
         BN_LOG("Booster Wait Time in Seconds Elapsed: ", boost_spawn_elapsed_seconds);
         BN_LOG("Player Current Speed: ", player_speed);
 
@@ -309,6 +323,10 @@ int main()
             level_plus(level);
             is_cleared = true;
             timer_level_clear.restart();
+        }
+
+        if (game_time_left <=0 && !is_game_over) {
+            level = Level::GAME_OVER;
         }
 
         // Simulates a change in Stages or Levels when score increases to max amount, up to level 4
@@ -435,7 +453,7 @@ int main()
 
         treasure.set_horizontal_scale(treasure_h_scale);
 
-        update_timer(timer_game, game_elapsed_seconds);
+        update_timer_decrement(timer_game, game_time_left);
         update_timer(timer_boost_active, boost_active_elapsed_seconds);
         update_timer(timer_boost_spawn, boost_spawn_elapsed_seconds);
 

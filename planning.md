@@ -84,5 +84,5 @@ Nothing at the moment!
 
 ### Esteban Plans
 - [ ] Reimplement game timer that counts downward, ending the game at time zero. (Partially Implemented)
-- [ ] Add a "game over" screen
+- [x] Add a "game over" screen
 - [x] Add boost sprite as a way to replenish boost count

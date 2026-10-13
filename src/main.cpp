@@ -101,7 +101,6 @@ int main()
     bn::vector<bn::sprite_ptr, MAX_BOOSTER_CHARS> booster_sprites = {};
     bn::vector<bn::sprite_ptr, MAX_LEVEL_CHARS> level_sprites = {};
     bn::vector<bn::sprite_ptr, MAX_GAME_CHARS> game_sprites = {};
-    bn::vector<bn::sprite_ptr, MAX_GAME_OVER_CHARS> game_over_sprites = {};
 
     // Text Generator for UI Elements
     bn::sprite_text_generator text_generator(common::fixed_8x16_sprite_font);
@@ -136,7 +135,6 @@ int main()
 
     // UI Element Sprites
     bn::string<MAX_SCORE_CHARS> score_string = bn::to_string<MAX_SCORE_CHARS>(score);
-    bn::string<MAX_GAME_OVER_CHARS> game_over_string = bn::to_string<MAX_GAME_OVER_CHARS>("GAME OVER");
     bn::string<MAX_BOOSTER_CHARS> booster_string = bn::to_string<MAX_BOOSTER_CHARS>(boosters);
     bn::string<MAX_GAME_CHARS> game_string = bn::to_string<MAX_GAME_CHARS>(game_time_left);
 

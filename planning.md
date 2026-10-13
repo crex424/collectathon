@@ -78,11 +78,11 @@ Nothing at the moment!
 - [ ] Change Player and maybe treasure sprite to something more interesting. (Partially Implemented)
 
 ### Campbell Plans
-- [X] Add sprite background
-- [X] Remove level indicator on the bottom
-- [X] Replace level cleared with level indicator instead to reduce screen clutter and sprite count
+- [x] Add sprite background
+- [x] Remove level indicator on the bottom
+- [x] Replace level cleared with level indicator instead to reduce screen clutter and sprite count
 
 ### Esteban Plans
-- [ ] Reimplement game timer that counts downward, ending the game at time zero. (Partially Implemented)
+- [x] Reimplement game timer that counts downward, ending the game at time zero. (Partially Implemented)
 - [x] Add a "game over" screen
 - [x] Add boost sprite as a way to replenish boost count
